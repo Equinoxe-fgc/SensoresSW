@@ -12,4 +12,43 @@
     <string name="address">Address</string>
     <string name="descripcion">Descripción</string>
     <string name="connectOne">Connect</string>
+
+    <string name="Gyroscope">Gyroscope</string>
+    <string name="Accelerometer">Accelerometer</string>
+    <string name="Magnetometer">Magnetometer</string>
+    <string name="Humidity">Humidity</string>
+    <string name="Barometer">Barometer</string>
+    <string name="Motion">Motion</string>
+    <string name="Light">Light</string>
+    <string name="Temperature">Temperature</string>
+
+    <string name="ERROR_MAX_INTERVAL">Max interval parameter out of range</string>
+    <string name="ERROR_MIN_INTERVAL">Min interval parameter out of range</string>
+    <string name="ERROR_MAX_MIN_INTERVAL">Max interval parameter lower than Min interval</string>
+    <string name="ERROR_LATENCY">Latency parameter out of range</string>
+    <string name="ERROR_TIMEOUT">Timeout parameter out of range</string>
+
+    <string name="start">Start</string>
+    <string name="gps">Positioning</string>
+    <string name="EnvioAservidor">Send data to server</string>
+    <string name="log_consumo_corriente">Log current</string>
+    <string name="Tiempo">Time (s)</string>
+    <string name="Period">Period</string>
+    <string name="screenON">Screen ON</string>
+
+    <string name="ERROR_RED">There is not network connection</string>
+    <string name="ERROR_CONEXION_RED">Error creating connection with the server</string>
+    <string name="ERROR_FICHERO">Error opening log file</string>
+    <string name="LOCATION_DISABLED">Location is disabled. Enable GPS and WiFi (or data)</string>
+    <string name="LOCATION_FAILED">Location failed. Enable GPS and WiFi (or data)</string>
+
+    <string name="AccelerometerUnit">G</string>
+    <string name="GyroscopeUnit">º/s</string>
+    <string name="MagnetometerUnit">uT</string>
+
+    <string name="channel_name">CANAL_NOTIFICACION</string>
+    <string name="channel_description">Channel for notifications</string>
+
+    <string name="sensor_name">Sensor Name</string>
+    <string name="title_activity_conexion">Connection</string>
 </resources>

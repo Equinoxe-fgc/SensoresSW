@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/btnStart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:onClick="onStartSingle"
+        android:text="@string/start" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <CheckBox
+            android:id="@+id/chkGPS"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/gps"
+            android:textAlignment="viewStart" />
+
+    <CheckBox
+        android:id="@+id/chkEnvioServidor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/EnvioAservidor" />
+
+    <CheckBox
+        android:id="@+id/chkLogConsumoCorriente"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/log_consumo_corriente" />
+
+    <CheckBox
+        android:id="@+id/chkScreenOn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/screenON" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/chkTiempo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/Tiempo" />
+
+        <EditText
+            android:id="@+id/txtTiempo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:enabled="false"
+            android:inputType="number" />
+    </LinearLayout>
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/Period"
+            android:textSize="20sp" />
+
+    <EditText
+        android:id="@+id/txtPeriodo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:text="20" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewSensores"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    </ScrollView>
+</LinearLayout>

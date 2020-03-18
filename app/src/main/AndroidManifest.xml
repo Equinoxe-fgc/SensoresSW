@@ -8,6 +8,12 @@
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -36,6 +42,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
+        <activity
+            android:name=".Conexion"
+            android:label="@string/title_activity_conexion" />
+        <activity
+            android:name=".Datos"
+            android:label="Datos" />
 
+        <service android:name="com.equinoxe.sensoressw.ServiceDatos" >
+        </service>
+        <service android:name="com.equinoxe.sensoressw.checkServiceDatos" >
+        </service>
+    </application>
 </manifest>

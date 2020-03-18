@@ -1,20 +1,19 @@
 package com.equinoxe.sensoressw;
 
 import android.Manifest;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanResult;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.wearable.activity.WearableActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.BluetoothLeScanner;
-import android.widget.Toast;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -45,6 +44,7 @@ public class MainActivity extends WearableActivity {
         btnConnect = findViewById(R.id.btnConnect);
         recyclerView = findViewById(R.id.recycler_view);
 
+        btDeviceInfoList = new BluetoothDeviceInfoList();
         adaptador = new MiAdaptador(this, btDeviceInfoList, this);
         layoutManager = new LinearLayoutManager(this);
 
@@ -62,7 +62,7 @@ public class MainActivity extends WearableActivity {
                     iContador++;
                     if (btDeviceInfoList.getSize() != 0)
                         adaptador.notifyDataSetChanged();
-                    if (iContador == 4)
+                    if (iContador == 10)
                         btnScanOnClick(btnScan);
                 } else
                     iContador = 0;
@@ -100,32 +100,14 @@ public class MainActivity extends WearableActivity {
 
             scanner = mBluetoothAdapter.getBluetoothLeScanner();
 
-            // We want to receive a list of found devices every second
-            /*ScanSettings settings = new ScanSettings.Builder()
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                    .setReportDelay(1000)
-                    .build();*/
-
             checkForPermissions();
             scanner.startScan(mScanCallback);
-
-            //handler.removeCallbacks(sendUpdatesToUI);
 
             btnScan.setText(getString(R.string.stop));
         }
 
         bScanning = !bScanning;
     }
-
-    /*private Runnable sendUpdatesToUI = new Runnable() {
-        public void run() {
-            if (btDeviceInfoList.getSize() != 0) {
-                recyclerView.setAdapter(adaptador);
-                recyclerView.setLayoutManager(layoutManager);
-            } else
-                handler.postDelayed(this, 1000); // 1 seconds
-        }
-    };*/
 
     private void checkForPermissions() {
         String[] PERMISSIONS_STORAGE = {
@@ -150,12 +132,6 @@ public class MainActivity extends WearableActivity {
                 // We don't have permission so prompt the user
                 ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, 1);
             }
-
-            permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WAKE_LOCK);
-            if (permission != PackageManager.PERMISSION_GRANTED) {
-                // We don't have permission so prompt the user
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WAKE_LOCK}, 1);
-            }
     }
 
 
@@ -177,7 +153,7 @@ public class MainActivity extends WearableActivity {
     public void btnConnectClick(View v) {
         int iNumSelected = btDeviceInfoList.getNumSelected();
 
-        /*Intent intent = new Intent(this, Conexion.class);
+        Intent intent = new Intent(this, Conexion.class);
         intent.putExtra("NumDevices", iNumSelected);
 
         int iPos = 0;
@@ -187,7 +163,7 @@ public class MainActivity extends WearableActivity {
                 iPos++;
             }
 
-        startActivity(intent);*/
+        startActivity(intent);
     }
 
     public void notifySomeSelected(boolean bSomeSelected) {
@@ -198,10 +174,10 @@ public class MainActivity extends WearableActivity {
     }
 
     public void connectOne(int iPos) {
-        /*Intent intent = new Intent(this, Conexion.class);
+        Intent intent = new Intent(this, Conexion.class);
         intent.putExtra("NumDevices", 1);
         intent.putExtra("Address0", btDeviceInfoList.getBluetoothDeviceInfo(iPos).getAddress());
 
-        startActivity(intent);*/
+        startActivity(intent);
     }
 }
