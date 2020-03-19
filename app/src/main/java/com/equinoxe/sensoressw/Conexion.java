@@ -39,7 +39,7 @@ public class Conexion extends WearableActivity {
     private CheckBox chkSendServer;
     private CheckBox chkTiempo;
     private CheckBox chkLogCurrent;
-    private CheckBox chkScreenOn;
+    //private CheckBox chkScreenOn;
     private TextView txtTiempo;
     private RecyclerView recyclerViewSensores;
     private MiAdaptadorSensores adaptadorSensores;
@@ -58,7 +58,6 @@ public class Conexion extends WearableActivity {
         chkSendServer = findViewById(R.id.chkEnvioServidor);
         chkTiempo = findViewById(R.id.chkTiempo);
         txtTiempo = findViewById(R.id.txtTiempo);
-        chkScreenOn = findViewById(R.id.chkScreenOn);
 
         chkLogCurrent = findViewById(R.id.chkLogConsumoCorriente);
 
@@ -205,7 +204,6 @@ public class Conexion extends WearableActivity {
         intent.putExtra("Location", chkGPS.isChecked());
         intent.putExtra("SendServer", chkSendServer.isChecked());
         intent.putExtra("bTime",chkTiempo.isChecked());
-        intent.putExtra("screenON", chkScreenOn.isChecked());
 
         if (!chkTiempo.isChecked())
             txtTiempo.setText("0");

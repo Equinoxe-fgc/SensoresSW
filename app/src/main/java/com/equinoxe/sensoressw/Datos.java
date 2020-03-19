@@ -53,7 +53,7 @@ public class Datos extends WearableActivity {
 
     boolean bLocation;
     boolean bSendServer;
-    boolean bScreenON;
+    //boolean bScreenON;
 
     boolean bLogCurrent;
 
@@ -83,6 +83,8 @@ public class Datos extends WearableActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_datos);
+
+        setAmbientEnabled();
 
         RecyclerView recyclerViewDatos;
         RecyclerView.LayoutManager layoutManager;
@@ -118,18 +120,7 @@ public class Datos extends WearableActivity {
         iLatency = extras.getInt("Latency", 0);
         iTimeout = extras.getInt("Timeout", 0);
         iPeriodoMaxRes = extras.getInt("PeriodoMaxRes", 0);*/
-        bScreenON = extras.getBoolean("screenON", false);
-
-        if (bScreenON || bSendServer) {
-            Window window = getWindow();
-            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-            if (bScreenON || bSendServer) {
-                WindowManager.LayoutParams layoutParams = window.getAttributes();
-                layoutParams.screenBrightness = 1f / 255f;
-                window.setAttributes(layoutParams);
-            }
-        }
+        //bScreenON = extras.getBoolean("screenON", false);
 
         recyclerViewDatos = findViewById(R.id.recycler_viewDatos);
         txtLatitud = findViewById(R.id.textViewLatitud);

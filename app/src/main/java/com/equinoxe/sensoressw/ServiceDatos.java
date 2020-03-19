@@ -1147,9 +1147,9 @@ public class ServiceDatos extends Service {
         valorGiroZ |= aux;
         fValorGiroZ = (float) (((float) valorGiroZ / 65536.0) * 500.0);
 
-        sCadenaGiroscopo[iDevice] = "G -> X: " + df.format(fValorGiroX) + " " + getString(R.string.GyroscopeUnit) + " ";
-        sCadenaGiroscopo[iDevice] += "   Y: " + df.format(fValorGiroY) + " " + getString(R.string.GyroscopeUnit) + " ";
-        sCadenaGiroscopo[iDevice] += "   Z: " + df.format(fValorGiroZ) + " " + getString(R.string.GyroscopeUnit);
+        sCadenaGiroscopo[iDevice] = "G ->  " + df.format(fValorGiroX) + " ";
+        sCadenaGiroscopo[iDevice] += df.format(fValorGiroY) + " ";
+        sCadenaGiroscopo[iDevice] += df.format(fValorGiroZ);
 
         //publishSensorValues(GIROSCOPO, iDevice,sCadena);
         if (bEnviarDatos) {
@@ -1188,9 +1188,9 @@ public class ServiceDatos extends Service {
         valorAcelZ |= aux;
         fValorAcelZ = (float) valorAcelZ / (32768f / 4f);
 
-        sCadenaAcelerometro[iDevice] = "A -> X: " + df.format(fValorAcelX) + " " + getString(R.string.AccelerometerUnit) + " ";
-        sCadenaAcelerometro[iDevice] += "   Y: " + df.format(fValorAcelY) + " " + getString(R.string.AccelerometerUnit) + " ";
-        sCadenaAcelerometro[iDevice] += "   Z: " + df.format(fValorAcelZ) + " " + getString(R.string.AccelerometerUnit);
+        sCadenaAcelerometro[iDevice] = "A -> " + df.format(fValorAcelX) + " ";
+        sCadenaAcelerometro[iDevice] += df.format(fValorAcelY) + " ";
+        sCadenaAcelerometro[iDevice] += df.format(fValorAcelZ);
 
         //publishSensorValues(ACELEROMETRO, iDevice,sCadena);
         if (bEnviarDatos) {
@@ -1229,9 +1229,9 @@ public class ServiceDatos extends Service {
         valorMagZ |= aux;
         fValorMagZ = (float) valorMagZ;
 
-        sCadenaMagnetometro[iDevice] =  "M -> X: " + fValorMagX + " " + getString(R.string.MagnetometerUnit) + " ";
-        sCadenaMagnetometro[iDevice] += "   Y: " + fValorMagY + " " + getString(R.string.MagnetometerUnit) + " ";
-        sCadenaMagnetometro[iDevice] += "   Z: " + fValorMagZ + " " + getString(R.string.MagnetometerUnit);
+        sCadenaMagnetometro[iDevice] =  "M -> " + fValorMagX + " ";
+        sCadenaMagnetometro[iDevice] += fValorMagY + " " ;
+        sCadenaMagnetometro[iDevice] += fValorMagZ;
 
         //publishSensorValues(MAGNETOMETRO, iDevice,sCadena);
         if (bEnviarDatos) {

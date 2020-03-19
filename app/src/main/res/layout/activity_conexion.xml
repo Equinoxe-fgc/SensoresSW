@@ -40,49 +40,51 @@
         android:layout_height="wrap_content"
         android:text="@string/log_consumo_corriente" />
 
-    <CheckBox
-        android:id="@+id/chkScreenOn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/screenON" />
-
-    <LinearLayout
+        <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <CheckBox
-            android:id="@+id/chkTiempo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/Tiempo" />
+            <CheckBox
+                android:id="@+id/chkTiempo"
+                android:layout_width="105dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:text="@string/Tiempo" />
 
-        <EditText
-            android:id="@+id/txtTiempo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="10"
-            android:enabled="false"
-            android:inputType="number" />
-    </LinearLayout>
+            <EditText
+                android:id="@+id/txtTiempo"
+                android:layout_width="117dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:enabled="false"
+                android:inputType="number" />
 
-        <TextView
-            android:id="@+id/textView"
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="@string/Period"
-            android:textSize="20sp" />
+            android:layout_weight="1"
+            android:orientation="horizontal">
 
-    <EditText
-        android:id="@+id/txtPeriodo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:text="20" />
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="75dp"
+                android:layout_height="match_parent"
+                android:text="@string/Period"
+                android:textSize="20sp" />
 
-    <androidx.recyclerview.widget.RecyclerView
+            <EditText
+                android:id="@+id/txtPeriodo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:text="20" />
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewSensores"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
