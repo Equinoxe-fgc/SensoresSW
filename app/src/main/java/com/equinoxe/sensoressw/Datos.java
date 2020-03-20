@@ -51,6 +51,8 @@ public class Datos extends WearableActivity {
     boolean bGiroscopo;
     boolean bMagnetometro;
 
+    boolean bInternalSensor;
+
     boolean bLocation;
     boolean bSendServer;
     //boolean bScreenON;
@@ -109,6 +111,8 @@ public class Datos extends WearableActivity {
 
         bLocation = extras.getBoolean("Location");
         bSendServer = extras.getBoolean("SendServer");
+
+        bInternalSensor = extras.getBoolean("InternalSensor");
 
         bTime = extras.getBoolean("bTime");
         lTime = extras.getLong("Time");
@@ -178,31 +182,35 @@ public class Datos extends WearableActivity {
     }
 
     private void crearServicio() {
-        intentChkServicio = new Intent(this, checkServiceDatos.class);
+        if (!bInternalSensor) {
+            intentChkServicio = new Intent(this, checkServiceDatos.class);
 
-        intentChkServicio.putExtra("Periodo", iPeriodo);
-        intentChkServicio.putExtra("Refresco", lTiempoRefrescoDatos);
-        intentChkServicio.putExtra("NumDevices", iNumDevices);
-        for (int i = 0; i < iNumDevices; i++)
-            intentChkServicio.putExtra("Address" + i, sAddresses[i]);
+            intentChkServicio.putExtra("Periodo", iPeriodo);
+            intentChkServicio.putExtra("Refresco", lTiempoRefrescoDatos);
+            intentChkServicio.putExtra("NumDevices", iNumDevices);
+            for (int i = 0; i < iNumDevices; i++)
+                intentChkServicio.putExtra("Address" + i, sAddresses[i]);
         /*intentChkServicio.putExtra("Humedad", bHumedad);
         intentChkServicio.putExtra("Barometro", bBarometro);
         intentChkServicio.putExtra("Luz", bLuz);
         intentChkServicio.putExtra("Temperatura", bTemperatura);*/
-        intentChkServicio.putExtra("Acelerometro", bAcelerometro);
-        intentChkServicio.putExtra("Giroscopo", bGiroscopo);
-        intentChkServicio.putExtra("Magnetometro", bMagnetometro);
-        intentChkServicio.putExtra("Location", bLocation);
-        intentChkServicio.putExtra("SendServer", bSendServer);
-        intentChkServicio.putExtra("LOGCurrent", bLogCurrent);
+            intentChkServicio.putExtra("Acelerometro", bAcelerometro);
+            intentChkServicio.putExtra("Giroscopo", bGiroscopo);
+            intentChkServicio.putExtra("Magnetometro", bMagnetometro);
+            intentChkServicio.putExtra("Location", bLocation);
+            intentChkServicio.putExtra("SendServer", bSendServer);
+            intentChkServicio.putExtra("LOGCurrent", bLogCurrent);
 
         /*intentChkServicio.putExtra("MaxInterval", (long) iMaxInterval);
         intentChkServicio.putExtra("MinInterval", (long) iMinInterval);
         intentChkServicio.putExtra("Latency", (long) iLatency);
         intentChkServicio.putExtra("Timeout", (long) iTimeout);
         intentChkServicio.putExtra("PeriodoMaxRes", (long) iPeriodoMaxRes);*/
-        //intentChkServicio.putExtra("bTime", bTime);
-        intentChkServicio.putExtra("Time", lTime);
+            //intentChkServicio.putExtra("bTime", bTime);
+            intentChkServicio.putExtra("Time", lTime);
+        } else {
+            intentChkServicio = new Intent(this, ServiceDatosInternalSensor.class);
+        }
 
         startService(intentChkServicio);
     }

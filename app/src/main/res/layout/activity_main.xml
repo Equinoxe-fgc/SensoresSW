@@ -22,7 +22,14 @@
         android:textAlignment="center" />
 
     <!--android:text="@string/scan" -->
-    <Button
+        <Button
+            android:id="@+id/btnInternal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="btnInternalClick"
+            android:text="@string/Internal" />
+
+        <Button
         android:id="@+id/btnScan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

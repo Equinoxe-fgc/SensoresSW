@@ -153,8 +153,6 @@ public class ServiceDatos extends Service {
     boolean bSendServer;
 
     //long iMaxInterval, iMinInterval,  iLatency, iTimeout, iPeriodoMaxRes;
-
-    boolean bTime;
     long lTime;
 
     private Looper mServiceLooper;
@@ -176,8 +174,6 @@ public class ServiceDatos extends Service {
 
     String sServer;
     int iPuerto;
-
-    WifiManager wifi;
 
     int iMuestraCorriente;
     float []fCorriente;

@@ -166,6 +166,13 @@ public class MainActivity extends WearableActivity {
         startActivity(intent);
     }
 
+    public void btnInternalClick(View v) {
+        Intent intent = new Intent(this, Datos.class);
+        intent.putExtra("InternalSensor", true);
+        intent.putExtra("NumDevices", 1);
+        startActivity(intent);
+    }
+
     public void notifySomeSelected(boolean bSomeSelected) {
         if (bSomeSelected)
             btnConnect.setVisibility(View.VISIBLE);

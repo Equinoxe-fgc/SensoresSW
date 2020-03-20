@@ -205,6 +205,8 @@ public class Conexion extends WearableActivity {
         intent.putExtra("SendServer", chkSendServer.isChecked());
         intent.putExtra("bTime",chkTiempo.isChecked());
 
+        intent.putExtra("InternalSensor", false);
+
         if (!chkTiempo.isChecked())
             txtTiempo.setText("0");
         long lTime = 1000*Integer.valueOf(txtTiempo.getText().toString());

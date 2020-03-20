@@ -53,5 +53,7 @@
         </service>
         <service android:name="com.equinoxe.sensoressw.checkServiceDatos" >
         </service>
+        <service android:name="com.equinoxe.sensoressw.ServiceDatosInternalSensor" >
+        </service>
     </application>
 </manifest>
