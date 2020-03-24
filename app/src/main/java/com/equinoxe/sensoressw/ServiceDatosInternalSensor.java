@@ -15,11 +15,7 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-
-import androidx.core.app.NotificationCompat;
-
 import java.text.DecimalFormat;
-import java.util.List;
 
 public class ServiceDatosInternalSensor extends Service implements SensorEventListener {
     final static int GIROSCOPO    = 0;
@@ -28,13 +24,13 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
 
     public static final String NOTIFICATION = "com.equinoxe.bluetoothle.android.service.receiver";
 
-    NotificationCompat.Builder mBuilder;
+    private boolean bAcelerometro, bGiroscopo, bMagnetometro;
+    private int iNumDevice;
 
     private SensorManager sensorManager;
     private Sensor sensorAcelerometro, sensorGiroscopo, sensorMagnetometro;
 
     String sCadenaGiroscopo, sCadenaMagnetometro, sCadenaAcelerometro;
-    //Message msg;
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
 
@@ -77,28 +73,25 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
 
         df = new DecimalFormat("###.##");
 
-        /*mBuilder = new NotificationCompat.Builder(this, getString(R.string.channel_name))
-                //.setSmallIcon(R.drawable.ic_launcher)
-                .setContentTitle(getString(R.string.app_name))
-                .setContentText("Refresco")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setCategory(NotificationCompat.CATEGORY_ALARM);*/
+        iNumDevice = intent.getIntExtra("NumDevices", 1) - 1;
+
+        bAcelerometro = intent.getBooleanExtra("Acelerometro", true);
+        bGiroscopo = intent.getBooleanExtra("Giroscopo", true);
+        bMagnetometro = intent.getBooleanExtra("Magnetometro", true);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        sensorAcelerometro = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorGiroscopo = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        //sensorMagnetometro = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-
-        /*String sTipos = "";
-        List<Sensor> lista = sensorManager.getSensorList(Sensor.TYPE_ALL);
-        for (Sensor sensor : lista) {
-            sTipos = sensor.getStringType();
-            sTipos += "\n";
-        }*/
-
-        sensorManager.registerListener(this, sensorAcelerometro, SensorManager.SENSOR_DELAY_GAME);
-        sensorManager.registerListener(this, sensorGiroscopo, SensorManager.SENSOR_DELAY_GAME);
-        //sensorManager.registerListener(this, sensorMagnetometro, SensorManager.SENSOR_DELAY_GAME);
+        if (bAcelerometro) {
+            sensorAcelerometro = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            sensorManager.registerListener(this, sensorAcelerometro, SensorManager.SENSOR_DELAY_GAME);
+        }
+        if (bGiroscopo) {
+            sensorGiroscopo = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+            sensorManager.registerListener(this, sensorGiroscopo, SensorManager.SENSOR_DELAY_GAME);
+        }
+        if (bMagnetometro) {
+            sensorMagnetometro = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+            sensorManager.registerListener(this, sensorMagnetometro, SensorManager.SENSOR_DELAY_GAME);
+        }
 
         Message msg = mServiceHandler.obtainMessage();
         msg.arg1 = startId;
@@ -124,15 +117,15 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
                                             + df.format(event.values[2]);
                 msg.arg1 = GIROSCOPO;
                 break;
-            /*case Sensor.TYPE_MAGNETIC_FIELD:
+            case Sensor.TYPE_MAGNETIC_FIELD:
                 sCadenaMagnetometro = "M ->  " + df.format(event.values[0]) + " "
                                                + df.format(event.values[1]) + " "
                                                + df.format(event.values[2]);
                 msg.arg1 = MAGNETOMETRO;
-                break;*/
+                break;
         }
 
-        msg.arg2 = 0;
+        msg.arg2 = iNumDevice;
         mServiceHandler.sendMessage(msg);
     }
 

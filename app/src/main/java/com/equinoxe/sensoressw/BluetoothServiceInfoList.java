@@ -18,10 +18,10 @@ public class BluetoothServiceInfoList {
         return vectorServices.get(iPos);
     }
 
-    public boolean isPresent(String sUUID) {
+    public boolean isPresent(String sName) {
         boolean bPresent = false;
         for (int i = 0; i < vectorServices.size() && !bPresent;i++)
-            if (vectorServices.get(i).getUUID().equals(sUUID))
+            if (vectorServices.get(i).getName().compareTo(sName) == 0)
                 bPresent = true;
 
         return bPresent;

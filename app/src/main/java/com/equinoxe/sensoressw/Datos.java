@@ -27,10 +27,6 @@ public class Datos extends WearableActivity {
     //final static long lTiempoRefrescoDatos = 120 * 1000;  // Tiempo de muestra de datos
     final static long lTiempoRefrescoDatos = 10 * 1000;  // Tiempo de muestra de datos
 
-    final static int iMIN_READ_TIME = 15;
-    final static int iMIN_RANDOM_TIME = 5;
-    final static int iMAX_RANDOM_TIME = 30;
-
     BluetoothDataList listaDatos;
 
     private MiAdaptadorDatos adaptadorDatos;
@@ -43,26 +39,19 @@ public class Datos extends WearableActivity {
     boolean bSensing;
     DecimalFormat df;
 
-    /*boolean bHumedad;
-    boolean bBarometro;
-    boolean bLuz;
-    boolean bTemperatura;*/
     boolean bAcelerometro;
     boolean bGiroscopo;
     boolean bMagnetometro;
 
-    boolean bInternalSensor;
+    boolean bInternalDevice;
 
     boolean bLocation;
     boolean bSendServer;
-    //boolean bScreenON;
 
     boolean bLogCurrent;
 
     boolean bTime;
     long lTime;
-
-    //int iMaxInterval, iMinInterval,  iLatency, iTimeout, iPeriodoMaxRes;
 
     int iNumDevices;
     int iPeriodo;
@@ -71,14 +60,13 @@ public class Datos extends WearableActivity {
 
     boolean bServicioParado;
     Intent intentChkServicio = null;
+    Intent intentServicioDatosInternalSensor = null;
 
     Timer timerTiempo;
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        //Toast.makeText(this,"Resume Datos", Toast.LENGTH_LONG);
     }
 
     @Override
@@ -101,10 +89,6 @@ public class Datos extends WearableActivity {
             sAddresses[i] = extras.getString("Address" + i);
         iPeriodo = extras.getInt("Periodo");
 
-        /*bHumedad = extras.getBoolean("Humedad");
-        bBarometro = extras.getBoolean("Barometro");
-        bLuz = extras.getBoolean("Luz");
-        bTemperatura = extras.getBoolean("Temperatura");*/
         bAcelerometro = extras.getBoolean("Acelerometro");
         bGiroscopo = extras.getBoolean("Giroscopo");
         bMagnetometro = extras.getBoolean("Magnetometro");
@@ -112,19 +96,12 @@ public class Datos extends WearableActivity {
         bLocation = extras.getBoolean("Location");
         bSendServer = extras.getBoolean("SendServer");
 
-        bInternalSensor = extras.getBoolean("InternalSensor");
+        bInternalDevice = extras.getBoolean("InternalDevice");
 
         bTime = extras.getBoolean("bTime");
         lTime = extras.getLong("Time");
 
         bLogCurrent = extras.getBoolean("LOGCurrent");
-
-        /*iMaxInterval = extras.getInt("MaxInterval", 0);
-        iMinInterval = extras.getInt("MinInterval", 0);
-        iLatency = extras.getInt("Latency", 0);
-        iTimeout = extras.getInt("Timeout", 0);
-        iPeriodoMaxRes = extras.getInt("PeriodoMaxRes", 0);*/
-        //bScreenON = extras.getBoolean("screenON", false);
 
         recyclerViewDatos = findViewById(R.id.recycler_viewDatos);
         txtLatitud = findViewById(R.id.textViewLatitud);
@@ -182,18 +159,37 @@ public class Datos extends WearableActivity {
     }
 
     private void crearServicio() {
-        if (!bInternalSensor) {
+        if (bInternalDevice) {
+            intentServicioDatosInternalSensor = new Intent(this, ServiceDatosInternalSensor.class);
+
+            intentServicioDatosInternalSensor.putExtra("Acelerometro", bAcelerometro);
+            intentServicioDatosInternalSensor.putExtra("Giroscopo", bGiroscopo);
+            intentServicioDatosInternalSensor.putExtra("Magnetometro", bMagnetometro);
+
+            intentServicioDatosInternalSensor.putExtra("NumDevices", iNumDevices);
+
+            startService(intentServicioDatosInternalSensor);
+        }
+
+        // Si no se selecciona dispositivo interno o se selecciona el interno y hay más de un dispositivo seleccionado
+        if (!bInternalDevice || (bInternalDevice && iNumDevices > 1)) {
             intentChkServicio = new Intent(this, checkServiceDatos.class);
 
             intentChkServicio.putExtra("Periodo", iPeriodo);
             intentChkServicio.putExtra("Refresco", lTiempoRefrescoDatos);
-            intentChkServicio.putExtra("NumDevices", iNumDevices);
-            for (int i = 0; i < iNumDevices; i++)
-                intentChkServicio.putExtra("Address" + i, sAddresses[i]);
-        /*intentChkServicio.putExtra("Humedad", bHumedad);
-        intentChkServicio.putExtra("Barometro", bBarometro);
-        intentChkServicio.putExtra("Luz", bLuz);
-        intentChkServicio.putExtra("Temperatura", bTemperatura);*/
+
+            int iPos = 0;
+            for (int i = 0; i < iNumDevices; i++) {
+                String sAddress = sAddresses[i];
+
+                if (sAddress.compareTo(getString(R.string.Internal)) == 0)
+                    continue;
+                intentChkServicio.putExtra("Address" + iPos, sAddresses[i]);
+                iPos++;
+            }
+
+            intentChkServicio.putExtra("NumDevices", bInternalDevice?iNumDevices-1:iNumDevices);
+
             intentChkServicio.putExtra("Acelerometro", bAcelerometro);
             intentChkServicio.putExtra("Giroscopo", bGiroscopo);
             intentChkServicio.putExtra("Magnetometro", bMagnetometro);
@@ -201,18 +197,10 @@ public class Datos extends WearableActivity {
             intentChkServicio.putExtra("SendServer", bSendServer);
             intentChkServicio.putExtra("LOGCurrent", bLogCurrent);
 
-        /*intentChkServicio.putExtra("MaxInterval", (long) iMaxInterval);
-        intentChkServicio.putExtra("MinInterval", (long) iMinInterval);
-        intentChkServicio.putExtra("Latency", (long) iLatency);
-        intentChkServicio.putExtra("Timeout", (long) iTimeout);
-        intentChkServicio.putExtra("PeriodoMaxRes", (long) iPeriodoMaxRes);*/
-            //intentChkServicio.putExtra("bTime", bTime);
             intentChkServicio.putExtra("Time", lTime);
-        } else {
-            intentChkServicio = new Intent(this, ServiceDatosInternalSensor.class);
-        }
 
-        startService(intentChkServicio);
+            startService(intentChkServicio);
+        }
     }
 
 
@@ -227,10 +215,6 @@ public class Datos extends WearableActivity {
                 int iDevice = bundle.getInt("Device");
                 String sCadena = bundle.getString("Cadena");
 
-                /*if (!bServicioParado && iSensor == 0 && iDevice == 0 && sCadena.length() == 0) {
-                    bServicioParado = true;
-                    unregisterReceiver(this);
-                }*/
                 if (iDevice == ServiceDatos.MSG) {
                     txtMensajes.append(sCadena.substring(16));
                 }
@@ -246,18 +230,7 @@ public class Datos extends WearableActivity {
                             case ServiceDatos.MAGNETOMETRO:
                                 listaDatos.setMovimiento3(iDevice, sCadena);
                                 break;
-                            /*case ServiceDatos.HUMEDAD:
-                                listaDatos.setHumedad(iDevice, sCadena);
-                                break;
-                            case ServiceDatos.LUZ:
-                                listaDatos.setLuz(iDevice, sCadena);
-                                break;
-                            case ServiceDatos.BAROMETRO:
-                                listaDatos.setBarometro(iDevice, sCadena);
-                                break;
-                            case ServiceDatos.TEMPERATURA:
-                                listaDatos.setTemperatura(iDevice, sCadena);
-                                break;*/
+
                             case ServiceDatos.LOCALIZACION_LAT:
                                 txtLatitud.setText("Lat: " + sCadena);
                                 break;
@@ -282,7 +255,12 @@ public class Datos extends WearableActivity {
     }
 
     public  void btnPararClick(View v) {
-        stopService(intentChkServicio);
+        if (bInternalDevice)
+            stopService(intentServicioDatosInternalSensor);
+
+        if (!bInternalDevice || (bInternalDevice && iNumDevices > 1))
+            stopService(intentChkServicio);
+
         unregisterReceiver(receiver);
 
         finish();

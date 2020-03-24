@@ -6,8 +6,11 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.wearable.activity.WearableActivity;
@@ -32,6 +35,7 @@ public class Conexion extends WearableActivity {
 
     int iNumDevices;
     String[] sAddresses = new String[8];
+    boolean bInternalDevice;
 
     private TextView txtPeriodo;
     private Button btnStart;
@@ -39,7 +43,6 @@ public class Conexion extends WearableActivity {
     private CheckBox chkSendServer;
     private CheckBox chkTiempo;
     private CheckBox chkLogCurrent;
-    //private CheckBox chkScreenOn;
     private TextView txtTiempo;
     private RecyclerView recyclerViewSensores;
     private MiAdaptadorSensores adaptadorSensores;
@@ -71,34 +74,68 @@ public class Conexion extends WearableActivity {
 
         Bundle extras = getIntent().getExtras();
         iNumDevices = extras.getInt("NumDevices");
+        bInternalDevice = extras.getBoolean("InternalDevice");
+
         for (int i = 0; i < iNumDevices; i++)
             sAddresses[i] = extras.getString("Address" + i);
 
-        BluetoothDevice device = adapter.getRemoteDevice(sAddresses[0]);
+        if (bInternalDevice)
+            buscarSensoresInternos();
 
-        btGatt = device.connectGatt(this, false, mBluetoothGattCallback);
+        if (bInternalDevice && iNumDevices == 1) {
+            btnStart.setEnabled(true);
+            recyclerViewSensores.setAdapter(adaptadorSensores);
+            recyclerViewSensores.setLayoutManager(layoutManager);
+        } else {
+            BluetoothDevice device = adapter.getRemoteDevice(bInternalDevice?sAddresses[1]:sAddresses[0]);
 
-        handler.removeCallbacks(sendUpdatesToUI);
+            btGatt = device.connectGatt(this, false, mBluetoothGattCallback);
 
+            handler.removeCallbacks(sendUpdatesToUI);
 
-        chkTiempo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (((CompoundButton) view).isChecked()){
-                    txtTiempo.setEnabled(true);
-                } else {
-                    txtTiempo.setEnabled(false);
+            chkTiempo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (((CompoundButton) view).isChecked()) {
+                        txtTiempo.setEnabled(true);
+                    } else {
+                        txtTiempo.setEnabled(false);
+                    }
                 }
+            });
+        }
+    }
+
+    public void buscarSensoresInternos() {
+        BluetoothServiceInfo serviceInfo = null;
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+
+        List<Sensor> lista = sensorManager.getSensorList(Sensor.TYPE_ALL);
+        for (Sensor sensor : lista) {
+            serviceInfo = null;
+            switch (sensor.getType()) {
+                case Sensor.TYPE_ACCELEROMETER:
+                    if (!listaServicesInfo.isPresent(getString(R.string.Accelerometer)))
+                        serviceInfo = new BluetoothServiceInfo(true, getString(R.string.Accelerometer), getString(R.string.Internal));
+                    break;
+                case Sensor.TYPE_GYROSCOPE:
+                    if (!listaServicesInfo.isPresent(getString(R.string.Gyroscope)))
+                        serviceInfo = new BluetoothServiceInfo(true, getString(R.string.Gyroscope), getString(R.string.Internal));
+                    break;
+                case Sensor.TYPE_MAGNETIC_FIELD:
+                    if (!listaServicesInfo.isPresent(getString(R.string.Magnetometer)))
+                        serviceInfo = new BluetoothServiceInfo(true, getString(R.string.Magnetometer), getString(R.string.Internal));
+                    break;
             }
-        });
+
+            if (serviceInfo != null)
+                listaServicesInfo.addBluetoothServiceInfo(serviceInfo);
+        }
     }
 
 
     @Override
     public void onBackPressed() {
-        //btGatt.disconnect();
-        //btGatt.close();
-
         super.onBackPressed();
     }
 
@@ -113,12 +150,18 @@ public class Conexion extends WearableActivity {
                         BluetoothServiceInfo serviceInfo;
 
                         if (sServiceName.compareTo(getString(R.string.Motion)) == 0) {   // El servicio de movimiento tiene giróscopo, acelerómetro y magnetómetro
-                            serviceInfo = new BluetoothServiceInfo(true, getString(R.string.Gyroscope), service.getUuid().toString());
-                            listaServicesInfo.addBluetoothServiceInfo(serviceInfo);
-                            serviceInfo = new BluetoothServiceInfo(true, getString(R.string.Accelerometer), service.getUuid().toString());
-                            listaServicesInfo.addBluetoothServiceInfo(serviceInfo);
-                            serviceInfo = new BluetoothServiceInfo(true, getString(R.string.Magnetometer), service.getUuid().toString());
-                            listaServicesInfo.addBluetoothServiceInfo(serviceInfo);
+                            if (!listaServicesInfo.isPresent(getString(R.string.Gyroscope))) {
+                                serviceInfo = new BluetoothServiceInfo(true, getString(R.string.Gyroscope), service.getUuid().toString());
+                                listaServicesInfo.addBluetoothServiceInfo(serviceInfo);
+                            }
+                            if (!listaServicesInfo.isPresent(getString(R.string.Accelerometer))) {
+                                serviceInfo = new BluetoothServiceInfo(true, getString(R.string.Accelerometer), service.getUuid().toString());
+                                listaServicesInfo.addBluetoothServiceInfo(serviceInfo);
+                            }
+                            if (!listaServicesInfo.isPresent(getString(R.string.Magnetometer))) {
+                                serviceInfo = new BluetoothServiceInfo(true, getString(R.string.Magnetometer), service.getUuid().toString());
+                                listaServicesInfo.addBluetoothServiceInfo(serviceInfo);
+                            }
 
                             btnStart.setEnabled(true);
                         }
@@ -175,6 +218,8 @@ public class Conexion extends WearableActivity {
     public void onStartSingle(View v) {
         Intent intent = new Intent(this, Datos.class);
         intent.putExtra("NumDevices", iNumDevices);
+        intent.putExtra("InternalDevice", bInternalDevice);
+
         for (int i = 0; i < iNumDevices; i++)
             intent.putExtra("Address" + i, sAddresses[i]);
         intent.putExtra("Periodo", Integer.valueOf(txtPeriodo.getText().toString()));
@@ -183,15 +228,7 @@ public class Conexion extends WearableActivity {
             BluetoothServiceInfo serviceInfo = listaServicesInfo.getBluetoothServiceInfo(i);
             String sName = serviceInfo.getName();
 
-            /*if (sName.compareTo(getString(R.string.Humidity)) == 0)
-                intent.putExtra("Humedad", serviceInfo.isSelected());
-            else if (sName.compareTo(getString(R.string.Barometer)) == 0)
-                intent.putExtra("Barometro", serviceInfo.isSelected());
-            else if (sName.compareTo(getString(R.string.Light)) == 0)
-                intent.putExtra("Luz", serviceInfo.isSelected());
-            else if (sName.compareTo(getString(R.string.Temperature)) == 0)
-                intent.putExtra("Temperatura", serviceInfo.isSelected());
-            else*/ if (sName.compareTo(getString(R.string.Gyroscope)) == 0)
+            if (sName.compareTo(getString(R.string.Gyroscope)) == 0)
                 intent.putExtra("Giroscopo", serviceInfo.isSelected());
             else if (sName.compareTo(getString(R.string.Accelerometer)) == 0)
                 intent.putExtra("Acelerometro", serviceInfo.isSelected());
@@ -205,7 +242,7 @@ public class Conexion extends WearableActivity {
         intent.putExtra("SendServer", chkSendServer.isChecked());
         intent.putExtra("bTime",chkTiempo.isChecked());
 
-        intent.putExtra("InternalSensor", false);
+        intent.putExtra("InternalSensor", bInternalDevice);
 
         if (!chkTiempo.isChecked())
             txtTiempo.setText("0");

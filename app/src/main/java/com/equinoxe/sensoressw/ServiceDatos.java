@@ -70,10 +70,7 @@ public class ServiceDatos extends Service {
     final static int GIROSCOPO    = 0;
     final static int ACELEROMETRO = 1;
     final static int MAGNETOMETRO = 2;
-    /*final static int HUMEDAD      = 3;
-    final static int LUZ          = 4;
-    final static int BAROMETRO    = 5;
-    final static int TEMPERATURA  = 6;*/
+
     final static int LOCALIZACION_LAT  = 7;
     final static int LOCALIZACION_LONG = 8;
     final static int PAQUETES = 9;
@@ -103,23 +100,12 @@ public class ServiceDatos extends Service {
     private int iPeriodo;
     private long lTiempoRefrescoDatos;
 
-    /*byte []barometro = new byte[4];
-    long valorBarometro, valorTemperatura;
-    float fValorBarometro, fValorTemperatura;
-
-    byte []luz = new byte[2];
-    float fValorLuz;*/
-
     long valorGiroX, valorGiroY, valorGiroZ;
     float fValorGiroX, fValorGiroY, fValorGiroZ;
     long valorAcelX, valorAcelY, valorAcelZ;
     float fValorAcelX, fValorAcelY, fValorAcelZ;
     long valorMagX, valorMagY, valorMagZ;
     float fValorMagX, fValorMagY, fValorMagZ;
-
-    /*byte []humedad = new byte[4];
-    long valorHumedad;
-    float fValorHumedad;*/
 
     boolean bLocation;
     LocationManager locManager;
@@ -140,8 +126,6 @@ public class ServiceDatos extends Service {
     byte[] iSecuencia;
     boolean[] bPrimerDato;
     long[] lDatosRecibidosAnteriores;
-    /*boolean[] bConfigTiempos;
-    boolean[] bConfigPeriodoMaxRes;*/
 
     byte[][] movimiento;
     boolean bSensing;
@@ -152,7 +136,6 @@ public class ServiceDatos extends Service {
     private String[] sAddresses = new String[MAX_SENSOR_NUMBER];
     boolean bSendServer;
 
-    //long iMaxInterval, iMinInterval,  iLatency, iTimeout, iPeriodoMaxRes;
     long lTime;
 
     private Looper mServiceLooper;
@@ -165,12 +148,12 @@ public class ServiceDatos extends Service {
 
     boolean bReiniciar = false;
     boolean bReinicio;
+    boolean bInternalDevice;
 
     PowerManager powerManager;
     PowerManager.WakeLock wakeLock;
 
     int notificationId = 0;
-    NotificationCompat.Builder mBuilder;
 
     String sServer;
     int iPuerto;
@@ -233,39 +216,30 @@ public class ServiceDatos extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        /*powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         try {
             wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MyApp::MyWakelockTag");
             wakeLock.acquire();
         } catch (NullPointerException e) {
             Log.e("NullPointerException", "ServiceDatos - onStartCommand");
-        }
+        }*/
 
         createNotificationChannel();
 
-        mBuilder = new NotificationCompat.Builder(this, getString(R.string.channel_name))
-                //.setSmallIcon(R.drawable.ic_launcher)
-                .setContentTitle(getString(R.string.app_name))
-                .setContentText("Refresco")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setCategory(NotificationCompat.CATEGORY_ALARM);
-
         iNumDevices = intent.getIntExtra("NumDevices",1);
+        bInternalDevice = intent.getBooleanExtra("InternalDevice", false);
         iPeriodo = intent.getIntExtra("Periodo",20);
         lTiempoRefrescoDatos = intent.getLongExtra("Refresco", 120000);
         lMensajesParaEnvio = lTiempoRefrescoDatos / iPeriodo;
         lMensajesPorSegundo = 1000 / iPeriodo;
 
-        for (int i = 0; i < iNumDevices; i++)
+        int i = (bInternalDevice)?1:0;
+        for (; i < iNumDevices; i++)
             sAddresses[i] = intent.getStringExtra("Address" + i);
 
         bAcelerometro = intent.getBooleanExtra("Acelerometro", true);
         bGiroscopo = intent.getBooleanExtra("Giroscopo", true);
         bMagnetometro = intent.getBooleanExtra("Magnetometro", true);
-        /*bHumedad = intent.getBooleanExtra("Humedad", false);
-        bBarometro = intent.getBooleanExtra("Barometro", false);
-        bTemperatura = intent.getBooleanExtra("Temperatura", false);
-        bLuz = intent.getBooleanExtra("Luz", false);*/
 
         bLocation = intent.getBooleanExtra("Location", false);
         bSendServer = intent.getBooleanExtra("SendServer", false);
@@ -274,33 +248,16 @@ public class ServiceDatos extends Service {
 
         lTime = intent.getLongExtra("Time", 0);
 
-        /*iMaxInterval = intent.getLongExtra("MaxInterval", 0);
-        iMinInterval = intent.getLongExtra("MinInterval", 0);
-        iLatency = intent.getLongExtra("Latency", 0);
-        iTimeout = intent.getLongExtra("Timeout", 0);
-        iPeriodoMaxRes = intent.getLongExtra("PeriodoMaxRes", 0);*/
-
         if (bLOGCurrent) {
             int iTamanoMuestraCorriente = (int)(lTime / lTiempoGrabacionCorriente) + 1000;
             fCorriente = new float[iTamanoMuestraCorriente];
         }
-
-        //bTime = intent.getBooleanExtra("bTime", false);
-        //lTime = intent.getLongExtra("Time", 0);
-
-        /*if (bSendServer) {
-            wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            wifi.setWifiEnabled(true);
-        }*/
 
         bReinicio = intent.getBooleanExtra("Reinicio", false);
 
         bSensores = new boolean[iNumDevices][4];
         bActivacion = new boolean[iNumDevices][4];
         bConfigPeriodo = new boolean[iNumDevices][4];
-
-        /*bConfigTiempos = new boolean[iNumDevices];
-        bConfigPeriodoMaxRes = new boolean[iNumDevices];*/
 
         // Se inicializan todos los sensores porque se guarda la estadística de todos aunque no se usen
         lDatosRecibidos = new long[MAX_SENSOR_NUMBER];
@@ -309,15 +266,9 @@ public class ServiceDatos extends Service {
         bPrimerDato = new boolean[iNumDevices];
         lDatosRecibidosAnteriores = new long[iNumDevices];
 
-        for (int i = 0; i < MAX_SENSOR_NUMBER; i++) {
+        for (i = 0; i < MAX_SENSOR_NUMBER; i++) {
             if (i < iNumDevices) {
                 bSensores[i][0] = bActivacion[i][0] = bConfigPeriodo[i][0] = bAcelerometro || bGiroscopo || bMagnetometro;
-                /*bSensores[i][1] = bActivacion[i][1] = bConfigPeriodo[i][1] = bHumedad;
-                bSensores[i][2] = bActivacion[i][2] = bConfigPeriodo[i][2] = bBarometro || bTemperatura;
-                bSensores[i][3] = bActivacion[i][3] = bConfigPeriodo[i][3] = bLuz;
-
-                bConfigTiempos[i] = (iMaxInterval != 0 || iMinInterval != 0 || iLatency != 0 || iTimeout != 0);
-                bConfigPeriodoMaxRes [i] = (iPeriodoMaxRes != 0);*/
 
                 lDatosRecibidosAnteriores[i] = 0;
                 iSecuencia[i] = 0;
@@ -376,7 +327,7 @@ public class ServiceDatos extends Service {
 
                 int iPosInicio = sUltimaLinea.indexOf('(');
                 sLinea = sUltimaLinea.substring(iPosInicio + 1);
-                for (int i = 0; i < MAX_SENSOR_NUMBER; i++) {
+                for (i = 0; i < MAX_SENSOR_NUMBER; i++) {
                     int iPosComa = sLinea.indexOf(',');
                     int iPosFin = sLinea.indexOf(')');
                     String sCadena1 = sLinea.substring(0, iPosComa);
@@ -404,7 +355,7 @@ public class ServiceDatos extends Service {
         ///////////////////////////////////////////////////
         if (bLOGCurrent) {
             iMuestraCorriente = 0;
-            for (int i = 0; i < fCorriente.length; i++)
+            for (i = 0; i < fCorriente.length; i++)
                 fCorriente[i] = 0.0f;
         }
         ///////////////////////////////////////////////////
@@ -413,7 +364,6 @@ public class ServiceDatos extends Service {
         final TimerTask timerTaskGrabarDatos = new TimerTask() {
             public void run() {
                 grabarMedidas();
-                //notiticacion();
             }
         };
 
@@ -423,7 +373,6 @@ public class ServiceDatos extends Service {
         final TimerTask timerTaskGrabarCorriente = new TimerTask() {
             public void run() {
                 guardarCorriente();
-                //notiticacion();
             }
         };
 
@@ -465,10 +414,7 @@ public class ServiceDatos extends Service {
         msg.arg1 = startId;
         mServiceHandler.sendMessage(msg);
 
-        //notiticacion();
-
         return START_NOT_STICKY;
-        //return START_STICKY;
     }
 
     private void createNotificationChannel() {
@@ -485,14 +431,6 @@ public class ServiceDatos extends Service {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
-    }
-
-    private void notiticacion() {
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-
-        // notificationId is a unique int for each notification that you must define
-        notificationManager.notify(notificationId, mBuilder.build());
-        notificationId++;
     }
 
     private boolean refreshDeviceCache(BluetoothGatt gatt){
@@ -813,15 +751,8 @@ public class ServiceDatos extends Service {
 
                         activarServicio(gatt, firstActivar);
                     } else {
-                        /*if (bConfigTiempos[iDevice]) {
-                            bConfigTiempos[iDevice] = false;
-                            configTiempos(gatt, iDevice);
-                        } else if (bConfigPeriodoMaxRes[iDevice]) {
-                            bConfigPeriodoMaxRes[iDevice] = false;
-                            configPeriodoMaxRes(gatt, iDevice);
-                        } else*/
-                            bSensing = true;
-                        //adaptadorDatos.notifyDataSetChanged();
+                        bSensing = true;
+
                         int firstPeriodo = firstSensorPeriodo(iDevice);
                         if (firstPeriodo < 4) {
                             bConfigPeriodo[iDevice][firstPeriodo] = false;
@@ -838,13 +769,6 @@ public class ServiceDatos extends Service {
 
                 int iDevice = findGattIndex(gatt);
 
-                /*if (characteristic.getUuid().compareTo(UUIDs.UUID_BAR_DATA) == 0) {
-                    barometro = characteristic.getValue();
-                    procesaBarometro(barometro, findGattIndex(gatt));
-                } else if (characteristic.getUuid().compareTo(UUIDs.UUID_OPT_DATA) == 0) {
-                    luz = characteristic.getValue();
-                    procesaLuz(luz, findGattIndex(gatt));
-                } else if (characteristic.getUuid().compareTo(UUIDs.UUID_MOV_DATA) == 0) {*/
                 movimiento[iDevice] = characteristic.getValue();
 
                 lDatosRecibidos[iDevice]++;
@@ -876,71 +800,19 @@ public class ServiceDatos extends Service {
                         if (envioAsync == null) {
                             String sCadena = sdf.format(new Date()) + " envioAsync es NULL\n";
                             publishSensorValues(0, MSG, sCadena);
-                            //notiticacion();
+
                             envioAsync = new EnvioDatosSocket(sServer, iPuerto, SENSOR_MOV_DATA_LEN + 1);
                             envioAsync.start();
                         }
-                        //if (lDatosRecibidos[iDevice] % 512 == 0)
                         envioAsync.setData((byte) iDevice, movimiento[iDevice]);
                     }
                 } catch (Exception e) {
                     String sCadena = sdf.format(new Date()) + " Excepción de envío: " + e.getMessage() + "\n";
                     publishSensorValues(0, MSG, sCadena);
                 }
-
-                /*} else if (characteristic.getUuid().compareTo(UUIDs.UUID_HUM_DATA) == 0) {
-                    humedad = characteristic.getValue();
-                    procesaHumedad(humedad, findGattIndex(gatt));
-                } else {
-                    Log.e("BluetoothLE", "Dato deslocalizado");
-                }*/
-
             }
         };
     }
-
-    /*private void configTiempos(BluetoothGatt btGatt, int iDevice) {
-        String sAddress = btGatt.getDevice().getAddress();
-        String sCadena = sdf.format(new Date()) + " Config Tiempos " + sAddress.substring(sAddress.length()-2) + "\n";
-        publishSensorValues(0, MSG, sCadena);
-
-        BluetoothGattCharacteristic characteristic;
-        characteristic = btGatt.getService(UUID_MOV_SERV).getCharacteristic(UUID_PARAM_CON);
-        byte[] highByte = new byte[4];
-        byte[] lowByte = new byte[4];
-
-        highByte[0] = (byte) ((iMaxInterval & 0x0000FF00) >> 8);
-        lowByte[0] = (byte) (iMaxInterval & 0x000000FF);
-
-        highByte[1] = (byte) ((iMinInterval & 0x0000FF00) >> 8);
-        lowByte[1] = (byte) (iMinInterval & 0x000000FF);
-
-        highByte[2] = (byte) ((iLatency & 0x0000FF00) >> 8);
-        lowByte[2] = (byte) (iLatency & 0x000000FF);
-
-        highByte[3] = (byte) ((iTimeout & 0x0000FF00) >> 8);
-        lowByte[3] = (byte) (iTimeout & 0x000000FF);
-
-        byte [] valor = new byte[]{lowByte[0], highByte[0], lowByte[1], highByte[1], lowByte[2], highByte[2], lowByte[3], highByte[3]};
-        characteristic.setValue(valor);
-        btGatt.writeCharacteristic(characteristic);
-    }*/
-
-    /*private void configPeriodoMaxRes(BluetoothGatt btGatt, int iDevice) {
-        String sAddress = btGatt.getDevice().getAddress();
-        String sCadena = sdf.format(new Date()) + " Config Periodo Max Res " + sAddress.substring(sAddress.length()-2) + "\n";
-        publishSensorValues(0, MSG, sCadena);
-
-        BluetoothGattCharacteristic characteristic;
-        characteristic = btGatt.getService(UUID_MOV_SERV).getCharacteristic(UUID_PERIODO);
-
-        byte highByte = (byte) ((iPeriodoMaxRes & 0x0000FF00) >> 8);
-        byte lowByte= (byte) (iPeriodoMaxRes & 0x000000FF);
-
-        byte [] valor = new byte[]{lowByte, highByte};
-        characteristic.setValue(valor);
-        btGatt.writeCharacteristic(characteristic);
-    }*/
 
     private void configPeriodo(BluetoothGatt btGatt, int firstPeriodo) {
         String sAddress = btGatt.getDevice().getAddress();
@@ -1117,29 +989,23 @@ public class ServiceDatos extends Service {
 
         // Giróscopo
         valorGiroX = movimiento[1];
-        //valorGiroX &= 0x00000000000000FF;
         valorGiroX = valorGiroX << 8;
 
         aux = movimiento[0];
-        //aux &= 0x00000000000000FF;
         valorGiroX |= aux;
         fValorGiroX = (float) (((float) valorGiroX / 65536.0) * 500.0);
 
         valorGiroY = movimiento[3];
-        //valorGiroY &= 0x00000000000000FF;
         valorGiroY = valorGiroY << 8;
 
         aux = movimiento[2];
-        //aux &= 0x00000000000000FF;
         valorGiroY |= aux;
         fValorGiroY = (float) (((float) valorGiroY / 65536.0) * 500.0);
 
         valorGiroZ = movimiento[5];
-        //valorGiroZ &= 0x00000000000000FF;
         valorGiroZ = valorGiroZ << 8;
 
         aux = movimiento[4];
-        //aux &= 0x00000000000000FF;
         valorGiroZ |= aux;
         fValorGiroZ = (float) (((float) valorGiroZ / 65536.0) * 500.0);
 
@@ -1147,7 +1013,6 @@ public class ServiceDatos extends Service {
         sCadenaGiroscopo[iDevice] += df.format(fValorGiroY) + " ";
         sCadenaGiroscopo[iDevice] += df.format(fValorGiroZ);
 
-        //publishSensorValues(GIROSCOPO, iDevice,sCadena);
         if (bEnviarDatos) {
             Message msg = mServiceHandler.obtainMessage();
             msg.arg1 = GIROSCOPO;
@@ -1158,29 +1023,23 @@ public class ServiceDatos extends Service {
 
         // Acelerómetro
         valorAcelX = movimiento[7];
-        //valorAcelX &= 0x00000000000000FF;
         valorAcelX = valorAcelX << 8;
 
         aux = movimiento[6];
-        //aux &= 0x00000000000000FF;
         valorAcelX |= aux;
         fValorAcelX = (float) valorAcelX / (32768f / 4f);
 
         valorAcelY = movimiento[9];
-        //valorAcelY &= 0x00000000000000FF;
         valorAcelY = valorAcelY << 8;
 
         aux = movimiento[8];
-        //aux &= 0x00000000000000FF;
         valorAcelY |= aux;
         fValorAcelY = (float) valorAcelY / (32768f / 4f);
 
         valorAcelZ = movimiento[11];
-        //valorAcelZ &= 0x00000000000000FF;
         valorAcelZ = valorAcelZ << 8;
 
         aux = movimiento[10];
-        //aux &= 0x00000000000000FF;
         valorAcelZ |= aux;
         fValorAcelZ = (float) valorAcelZ / (32768f / 4f);
 
@@ -1188,7 +1047,6 @@ public class ServiceDatos extends Service {
         sCadenaAcelerometro[iDevice] += df.format(fValorAcelY) + " ";
         sCadenaAcelerometro[iDevice] += df.format(fValorAcelZ);
 
-        //publishSensorValues(ACELEROMETRO, iDevice,sCadena);
         if (bEnviarDatos) {
             Message msg = mServiceHandler.obtainMessage();
             msg.arg1 = ACELEROMETRO;
@@ -1196,32 +1054,25 @@ public class ServiceDatos extends Service {
             mServiceHandler.sendMessage(msg);
         }
 
-
         // Magnetómetro
         valorMagX = movimiento[13];
-        //valorMagX &= 0x00000000000000FF;
         valorMagX = valorMagX << 8;
 
         aux = movimiento[12];
-        //aux &= 0x00000000000000FF;
         valorMagX |= aux;
         fValorMagX = (float) valorMagX;
 
         valorMagY = movimiento[15];
-        //valorMagY &= 0x00000000000000FF;
         valorMagY = valorMagY << 8;
 
         aux = movimiento[14];
-        //aux &= 0x00000000000000FF;
         valorMagY |= aux;
         fValorMagY = (float) valorMagY;
 
         valorMagZ = movimiento[17];
-        //valorMagZ &= 0x00000000000000FF;
         valorMagZ = valorMagZ << 8;
 
         aux = movimiento[16];
-        //aux &= 0x00000000000000FF;
         valorMagZ |= aux;
         fValorMagZ = (float) valorMagZ;
 
@@ -1229,7 +1080,6 @@ public class ServiceDatos extends Service {
         sCadenaMagnetometro[iDevice] += fValorMagY + " " ;
         sCadenaMagnetometro[iDevice] += fValorMagZ;
 
-        //publishSensorValues(MAGNETOMETRO, iDevice,sCadena);
         if (bEnviarDatos) {
             Message msg = mServiceHandler.obtainMessage();
             msg.arg1 = MAGNETOMETRO;
@@ -1238,88 +1088,6 @@ public class ServiceDatos extends Service {
         }
 
     }
-
-    /*private void procesaHumedad(byte humedad[], int iDevice) {
-        long aux;
-
-        valorHumedad = humedad[3];
-        valorHumedad &= 0x00000000000000FF;
-        valorHumedad = valorHumedad << 8;
-
-        aux = humedad[2];
-        aux &= 0x00000000000000FF;
-        valorHumedad |= aux;
-
-        valorHumedad *= 100;
-        fValorHumedad = valorHumedad / 65536;
-
-        String sCadena = Float.toString(fValorHumedad) + " " + getString(R.string.HumidityUnit);
-        //listaDatos.setHumedad(iDevice, sCadena);
-        publishSensorValues(HUMEDAD, iDevice,sCadena);
-    }
-
-    private void procesaLuz(byte luz[], int iDevice) {
-        long auxM, auxE;
-
-        auxM = luz[1];
-        auxM = auxM << 8;
-        auxM |= luz[0];
-        auxM &= 0x0000000000000FFF;
-
-        auxE = (auxM & 0x000000000000F000) >> 12;
-
-        auxE = (auxE == 0)?1:2<<(auxE-1);
-
-        fValorLuz = (float)auxM * (((float) auxE) / 100);
-
-        String sCadena = df.format(fValorLuz) + " " + getString(R.string.LightUnit);
-        //listaDatos.setLuz(iDevice, sCadena);
-        publishSensorValues(LUZ, iDevice,sCadena);
-    }
-
-    private void procesaBarometro(byte barometro[], int iDevice) {
-        long aux;
-
-        // Barómetro
-        valorBarometro = barometro[5];
-        valorBarometro &= 0x00000000000000FF;
-        valorBarometro = valorBarometro << 8;
-
-        aux = barometro[4];
-        aux &= 0x00000000000000FF;
-        valorBarometro |= aux;
-        valorBarometro = valorBarometro << 8;
-
-        aux = barometro[3];
-        aux &= 0x00000000000000FF;
-        valorBarometro |= aux;
-        fValorBarometro = valorBarometro / 100;
-
-        String sCadena = df.format(fValorBarometro) + " " + getString(R.string.BarometerUnit);
-        // listaDatos.setBarometro(iDevice, sCadena);
-        publishSensorValues(BAROMETRO, iDevice,sCadena);
-
-
-        // Temperatura
-        valorTemperatura = barometro[2];
-        valorTemperatura &= 0x00000000000000FF;
-        valorTemperatura = valorTemperatura << 8;
-
-        aux = barometro[1];
-        aux &= 0x00000000000000FF;
-        valorTemperatura |= aux;
-        valorTemperatura = valorTemperatura << 8;
-
-        aux = barometro[0];
-        aux &= 0x00000000000000FF;
-        valorTemperatura |= aux;
-        fValorTemperatura = valorTemperatura / 100;
-
-        sCadena = df.format(fValorTemperatura) + " " + getString(R.string.TemperatureUnit);
-        //listaDatos.setTemperatura(iDevice, sCadena);
-        publishSensorValues(TEMPERATURA, iDevice,sCadena);
-    }*/
-
 
     private void publishSensorValues(int iSensor, int iDevice, String sCadena) {
         Intent intent = new Intent(NOTIFICATION);

@@ -96,6 +96,11 @@ public class MainActivity extends WearableActivity {
             }
 
             btDeviceInfoList.clearAllBluetoothDeviceInfo();
+
+            // Se añade el device interno
+            BluetoothDeviceInfo btDeviceInternal = new BluetoothDeviceInfo(false, getString(R.string.Internal), getString(R.string.Internal));
+            btDeviceInfoList.addBluetoothDeviceInfo(btDeviceInternal);
+
             adaptador.notifyDataSetChanged();
 
             scanner = mBluetoothAdapter.getBluetoothLeScanner();
@@ -144,7 +149,6 @@ public class MainActivity extends WearableActivity {
                 if (sName != null && sName.compareTo(SENSORTAG_STRING) == 0) {
                     BluetoothDeviceInfo btDeviceInfo = new BluetoothDeviceInfo(false, device.getName(), device.getAddress());
                     btDeviceInfoList.addBluetoothDeviceInfo(btDeviceInfo);
-                    //btnScanOnClick(null);
                 }
             }
         }
@@ -157,18 +161,24 @@ public class MainActivity extends WearableActivity {
         intent.putExtra("NumDevices", iNumSelected);
 
         int iPos = 0;
-        for (int i = 0; i < btDeviceInfoList.getSize(); i++)
+        boolean bInternalDevice = false;
+        for (int i = 0; i < btDeviceInfoList.getSize(); i++) {
             if (btDeviceInfoList.getBluetoothDeviceInfo(i).isSelected()) {
+                bInternalDevice |= btDeviceInfoList.getBluetoothDeviceInfo(i).getDescription().compareTo(getString(R.string.Internal)) == 0;
+
                 intent.putExtra("Address" + iPos, btDeviceInfoList.getBluetoothDeviceInfo(i).getAddress());
                 iPos++;
             }
+        }
+
+        intent.putExtra("InternalDevice", bInternalDevice);
 
         startActivity(intent);
     }
 
     public void btnInternalClick(View v) {
         Intent intent = new Intent(this, Datos.class);
-        intent.putExtra("InternalSensor", true);
+        intent.putExtra("InternalDevice", true);
         intent.putExtra("NumDevices", 1);
         startActivity(intent);
     }
@@ -184,6 +194,8 @@ public class MainActivity extends WearableActivity {
         Intent intent = new Intent(this, Conexion.class);
         intent.putExtra("NumDevices", 1);
         intent.putExtra("Address0", btDeviceInfoList.getBluetoothDeviceInfo(iPos).getAddress());
+
+        intent.putExtra("InternalDevice", btDeviceInfoList.getBluetoothDeviceInfo(iPos).getDescription().compareTo(getString(R.string.Internal)) == 0);
 
         startActivity(intent);
     }
