@@ -4,10 +4,10 @@
     This string is used for square devices and overridden by hello_world in
     values-round/strings.xml for round devices.
     -->
-    <string name="CompileDate">24/03/2020</string>
+    <string name="CompileDate">26/03/2020</string>
     <string name="scan">Scan</string>
     <string name="stop">Stop</string>
-    <string name="connect">Connect all selected</string>
+    <string name="connect">Connect selected</string>
     <string name="EnableBluetooth">Bluetooth is disabled. Enable it.</string>
     <string name="address">Address</string>
     <string name="descripcion">Descripción</string>
@@ -52,4 +52,5 @@
     <string name="sensor_name">Sensor Name</string>
     <string name="title_activity_conexion">Connection</string>
     <string name="Internal">Internal sensor</string>
+    <string name="Internal_Address">00:00:00:00:00:00</string>
 </resources>

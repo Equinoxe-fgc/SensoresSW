@@ -5,26 +5,36 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.Location;
+import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.wearable.activity.WearableActivity;
+import android.util.Log;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.FileOutputStream;
 import java.text.DecimalFormat;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Vector;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 
 public class Datos extends WearableActivity {
-    //final static long lTiempoRefrescoDatos = 120 * 1000;  // Tiempo de muestra de datos
+    final static long lTiempoGPS = 10 * 1000;                   // Tiempo de toma de muestras de GPS (en ms)
+    final static long lTiempoGrabacionCorriente = 10;           // Tiempo de grabación del log de corriente
     final static long lTiempoRefrescoDatos = 10 * 1000;  // Tiempo de muestra de datos
 
     BluetoothDataList listaDatos;
@@ -35,7 +45,6 @@ public class Datos extends WearableActivity {
     private TextView txtMensajes;
 
     Handler handlerDatos;
-    Handler handlerWeb;
     boolean bSensing;
     DecimalFormat df;
 
@@ -48,9 +57,6 @@ public class Datos extends WearableActivity {
     boolean bLocation;
     boolean bSendServer;
 
-    boolean bLogCurrent;
-
-    boolean bTime;
     long lTime;
 
     int iNumDevices;
@@ -63,6 +69,19 @@ public class Datos extends WearableActivity {
     Intent intentServicioDatosInternalSensor = null;
 
     Timer timerTiempo;
+
+    Timer timerGrabarCorriente;
+    FileOutputStream fOutCurrent;
+    boolean bLOGCurrent;
+    int iMuestraCorriente;
+    float []fCorriente;
+    BatteryManager mBatteryManager;
+
+    private FusedLocationProviderClient fusedLocationClient;
+    Timer timerGPS;
+    private LocationCallback locationCallback;
+    LocationRequest locationRequest = null;
+
 
     @Override
     protected void onResume() {
@@ -98,10 +117,8 @@ public class Datos extends WearableActivity {
 
         bInternalDevice = extras.getBoolean("InternalDevice");
 
-        bTime = extras.getBoolean("bTime");
         lTime = extras.getLong("Time");
-
-        bLogCurrent = extras.getBoolean("LOGCurrent");
+        bLOGCurrent = extras.getBoolean("LOGCurrent");
 
         recyclerViewDatos = findViewById(R.id.recycler_viewDatos);
         txtLatitud = findViewById(R.id.textViewLatitud);
@@ -128,24 +145,88 @@ public class Datos extends WearableActivity {
 
         bServicioParado = true;
 
-        crearServicio();
 
-        registerReceiver(receiver, new IntentFilter(ServiceDatos.NOTIFICATION));
+        if (bLOGCurrent) {
+            mBatteryManager = (BatteryManager) this.getSystemService(Context.BATTERY_SERVICE);
 
-        if (bTime) {
-            final TimerTask timerTaskTiempo = new TimerTask() {
+            int iTamanoMuestraCorriente = (int)(lTime / lTiempoGrabacionCorriente) + 1000;
+            fCorriente = new float[iTamanoMuestraCorriente];
+
+            iMuestraCorriente = 0;
+            for (int i = 0; i < fCorriente.length; i++)
+                fCorriente[i] = 0.0f;
+
+            String sFichero = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + iNumDevices + "_" + iPeriodo + "_Current.txt";
+            try {
+                fOutCurrent = new FileOutputStream(sFichero, false);
+            } catch (Exception e) {}
+
+            final TimerTask timerTaskGrabarCorriente = new TimerTask() {
                 public void run() {
-                    btnPararClick(null);
+                    guardarCorriente();
                 }
             };
+
+            timerGrabarCorriente = new Timer();
+            timerGrabarCorriente.scheduleAtFixedRate(timerTaskGrabarCorriente, lTiempoGrabacionCorriente, lTiempoGrabacionCorriente);
+
+            final TimerTask timerTaskTiempo = new TimerTask() {
+                    public void run() { btnPararClick(null);
+                    }
+                };
 
             timerTiempo = new Timer();
             timerTiempo.schedule(timerTaskTiempo, lTime);
         }
 
+        crearServicio();
+
+        registerReceiver(receiver, new IntentFilter(ServiceDatos.NOTIFICATION));
+
+        if (bLocation) {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+            locationRequest = new LocationRequest();
+            locationRequest.setInterval(lTiempoGPS);
+
+            locationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    if (locationResult == null) {
+                        return;
+                    }
+                    for (Location location : locationResult.getLocations()) {
+                        txtLatitud.setText("Lat: " + Double.toString(location.getLatitude()));
+                        txtLongitud.setText("Long: " + Double.toString(location.getLongitude()));
+                    }
+                };
+            };
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback,null /* Looper */);
+
+            /*fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            // Got last known location. In some rare situations this can be null.
+                            if (location != null) {
+                                txtLatitud.setText("Lat: " + Double.toString(location.getLatitude()));
+                                txtLongitud.setText("Long: " + Double.toString(location.getLongitude()));
+                            }
+                        }
+                    });
+
+            final TimerTask timerTaskGPS = new TimerTask() {
+                @Override
+                public void run() {
+                    fusedLocationClient.getLastLocation();
+                }
+            };
+
+            timerGPS = new Timer();
+            timerGPS.schedule(timerTaskGPS, lTiempoGPS);*/
+        }
 
         handlerDatos = new Handler();
-        handlerWeb = new Handler();
         runOnUiThread(new Runnable(){
             @Override
             public void run(){
@@ -158,6 +239,15 @@ public class Datos extends WearableActivity {
         });
     }
 
+    public void guardarCorriente() {
+        try {
+            fCorriente[iMuestraCorriente] = mBatteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW);
+            iMuestraCorriente++;
+        } catch (Exception e) {
+            Log.e("Fichero de resultados", e.getMessage(), e);
+        }
+    }
+
     private void crearServicio() {
         if (bInternalDevice) {
             intentServicioDatosInternalSensor = new Intent(this, ServiceDatosInternalSensor.class);
@@ -166,7 +256,7 @@ public class Datos extends WearableActivity {
             intentServicioDatosInternalSensor.putExtra("Giroscopo", bGiroscopo);
             intentServicioDatosInternalSensor.putExtra("Magnetometro", bMagnetometro);
 
-            intentServicioDatosInternalSensor.putExtra("NumDevices", iNumDevices);
+            //intentServicioDatosInternalSensor.putExtra("NumDevices", iNumDevices);
 
             startService(intentServicioDatosInternalSensor);
         }
@@ -178,26 +268,20 @@ public class Datos extends WearableActivity {
             intentChkServicio.putExtra("Periodo", iPeriodo);
             intentChkServicio.putExtra("Refresco", lTiempoRefrescoDatos);
 
-            int iPos = 0;
             for (int i = 0; i < iNumDevices; i++) {
-                String sAddress = sAddresses[i];
-
-                if (sAddress.compareTo(getString(R.string.Internal)) == 0)
-                    continue;
-                intentChkServicio.putExtra("Address" + iPos, sAddresses[i]);
-                iPos++;
+                intentChkServicio.putExtra("Address" + i, sAddresses[i]);
             }
 
-            intentChkServicio.putExtra("NumDevices", bInternalDevice?iNumDevices-1:iNumDevices);
+            intentChkServicio.putExtra("NumDevices", iNumDevices);
 
             intentChkServicio.putExtra("Acelerometro", bAcelerometro);
             intentChkServicio.putExtra("Giroscopo", bGiroscopo);
             intentChkServicio.putExtra("Magnetometro", bMagnetometro);
             intentChkServicio.putExtra("Location", bLocation);
             intentChkServicio.putExtra("SendServer", bSendServer);
-            intentChkServicio.putExtra("LOGCurrent", bLogCurrent);
+            //intentChkServicio.putExtra("LOGCurrent", bLogCurrent);
 
-            intentChkServicio.putExtra("Time", lTime);
+            //intentChkServicio.putExtra("Time", lTime);
 
             startService(intentChkServicio);
         }
@@ -231,12 +315,12 @@ public class Datos extends WearableActivity {
                                 listaDatos.setMovimiento3(iDevice, sCadena);
                                 break;
 
-                            case ServiceDatos.LOCALIZACION_LAT:
+                            /*case ServiceDatos.LOCALIZACION_LAT:
                                 txtLatitud.setText("Lat: " + sCadena);
                                 break;
                             case ServiceDatos.LOCALIZACION_LONG:
                                 txtLongitud.setText("Long: " + sCadena);
-                                break;
+                                break;*/
                             case ServiceDatos.PAQUETES:
                                 listaDatos.setPaquetes(iDevice, sCadena);
                                 break;
@@ -255,6 +339,20 @@ public class Datos extends WearableActivity {
     }
 
     public  void btnPararClick(View v) {
+        if (bLOGCurrent) {
+            timerGrabarCorriente.cancel();
+
+            String sCadena;
+            try {
+                for (int i = 0; i < fCorriente.length; i++) {
+                    sCadena = "" + fCorriente[i] + "\n";
+                    fOutCurrent.write(sCadena.getBytes());
+                }
+                fOutCurrent.close();
+            } catch (Exception e) {
+            }
+        }
+
         if (bInternalDevice)
             stopService(intentServicioDatosInternalSensor);
 
@@ -265,4 +363,5 @@ public class Datos extends WearableActivity {
 
         finish();
     }
+
 }

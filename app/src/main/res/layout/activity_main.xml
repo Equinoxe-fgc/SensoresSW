@@ -21,7 +21,6 @@
         android:text="@string/CompileDate"
         android:textAlignment="center" />
 
-    <!--android:text="@string/scan" -->
         <Button
             android:id="@+id/btnInternal"
             android:layout_width="match_parent"

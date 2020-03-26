@@ -51,6 +51,7 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
         ServiceHandler(Looper looper) {
             super(looper);
         }
+
         @Override
         public void handleMessage(Message msg) {
             switch (msg.arg1) {
@@ -125,7 +126,8 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
                 break;
         }
 
-        msg.arg2 = iNumDevice;
+        //msg.arg2 = iNumDevice;
+        msg.arg2 = 0;
         mServiceHandler.sendMessage(msg);
     }
 
@@ -156,6 +158,21 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
         intent.putExtra("Device", iDevice);
         intent.putExtra("Cadena", sCadena);
         sendBroadcast(intent);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if (bAcelerometro) {
+            sensorManager.unregisterListener(this, sensorAcelerometro);
+        }
+        if (bGiroscopo) {
+            sensorManager.unregisterListener(this, sensorGiroscopo);
+        }
+        if (bMagnetometro) {
+            sensorManager.unregisterListener(this, sensorMagnetometro);
+        }
     }
 
     @Override

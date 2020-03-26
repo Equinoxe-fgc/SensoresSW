@@ -26,22 +26,6 @@ class BluetoothDataList {
         vectorData.get(iPos).setAddress(sAddress);
     }
 
-    void setHumedad(int iPos, String sHumedad) {
-        vectorData.get(iPos).setHumedad(sHumedad);
-    }
-
-    void setBarometro(int iPos, String sBarometro) {
-        vectorData.get(iPos).setBarometro(sBarometro);
-    }
-
-    void setLuz(int iPos, String sLuz) {
-        vectorData.get(iPos).setLuz(sLuz);
-    }
-
-    void setTemperatura(int iPos, String sTemperatura) {
-        vectorData.get(iPos).setTemperatura(sTemperatura);
-    }
-
     void setMovimiento1(int iPos, String sMovimiento1) {
         vectorData.get(iPos).setMovimiento1(sMovimiento1);
     }

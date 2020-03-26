@@ -20,7 +20,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,12 +29,8 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
-
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -43,7 +38,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -55,9 +49,8 @@ import static android.bluetooth.BluetoothGattCharacteristic.FORMAT_SINT8;
 
 
 public class ServiceDatos extends Service {
-    final static long lTiempoGPS = 10 * 1000;                   // Tiempo de toma de muestras de GPS (en ms)
+    //final static long lTiempoGPS = 10 * 1000;                   // Tiempo de toma de muestras de GPS (en ms)
     final static long lTiempoGrabacionDatos = 120 * 1000;       // Tiempo de grabación de las estadísticas (en ms)
-    final static long lTiempoGrabacionCorriente = 10;           // Tiempo de grabación del log de corriente
     final static long lTiempoComprobacionDesconexion = 5 * 1000;  // Tiempo cada cuanto se comprueba si ha habido desconexión
 
     final static long lDelayComprobacionDesconexion = 30000;
@@ -88,11 +81,9 @@ public class ServiceDatos extends Service {
     private long lMensajesParaEnvio;
     private long lMensajesPorSegundo;
 
-    boolean bLOGCurrent;
-
     SimpleDateFormat sdf;
 
-    FileOutputStream fOut, fOutCurrent;
+    FileOutputStream fOut;
     FileOutputStream fLog;
     BatteryInfoBT batInfo;
 
@@ -110,7 +101,7 @@ public class ServiceDatos extends Service {
     boolean bLocation;
     LocationManager locManager;
     Location mejorLocaliz = null;
-    boolean bGPSEnabled;
+    //boolean bGPSEnabled;
     boolean bNetworkEnabled;
 
     boolean bNetConnected;
@@ -136,30 +127,18 @@ public class ServiceDatos extends Service {
     private String[] sAddresses = new String[MAX_SENSOR_NUMBER];
     boolean bSendServer;
 
-    long lTime;
-
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
 
     Timer timerComprobarDesconexion;
     Timer timerGrabarDatos;
-    Timer timerGrabarGPS;
-    Timer timerGrabarCorriente;
+    //Timer timerGrabarGPS;
 
     boolean bReiniciar = false;
     boolean bReinicio;
-    boolean bInternalDevice;
-
-    PowerManager powerManager;
-    PowerManager.WakeLock wakeLock;
-
-    int notificationId = 0;
 
     String sServer;
     int iPuerto;
-
-    int iMuestraCorriente;
-    float []fCorriente;
 
     // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
@@ -201,57 +180,36 @@ public class ServiceDatos extends Service {
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
+
         timerGrabarDatos.cancel();
         timerComprobarDesconexion.cancel();
-        if (bLOGCurrent)
-            timerGrabarCorriente.cancel();
-        if (bSendServer)
-            timerGrabarGPS.cancel();
+
+        /*if (bSendServer)
+            timerGrabarGPS.cancel();*/
 
         cerrarConexiones();
-
-        wakeLock.release();
-        super.onDestroy();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        /*powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        try {
-            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MyApp::MyWakelockTag");
-            wakeLock.acquire();
-        } catch (NullPointerException e) {
-            Log.e("NullPointerException", "ServiceDatos - onStartCommand");
-        }*/
-
         createNotificationChannel();
 
         iNumDevices = intent.getIntExtra("NumDevices",1);
-        bInternalDevice = intent.getBooleanExtra("InternalDevice", false);
         iPeriodo = intent.getIntExtra("Periodo",20);
         lTiempoRefrescoDatos = intent.getLongExtra("Refresco", 120000);
         lMensajesParaEnvio = lTiempoRefrescoDatos / iPeriodo;
         lMensajesPorSegundo = 1000 / iPeriodo;
 
-        int i = (bInternalDevice)?1:0;
-        for (; i < iNumDevices; i++)
+        for (int i = 0; i < iNumDevices; i++)
             sAddresses[i] = intent.getStringExtra("Address" + i);
 
         bAcelerometro = intent.getBooleanExtra("Acelerometro", true);
         bGiroscopo = intent.getBooleanExtra("Giroscopo", true);
         bMagnetometro = intent.getBooleanExtra("Magnetometro", true);
 
-        bLocation = intent.getBooleanExtra("Location", false);
+        //bLocation = intent.getBooleanExtra("Location", false);
         bSendServer = intent.getBooleanExtra("SendServer", false);
-
-        bLOGCurrent = intent.getBooleanExtra("LOGCurrent", false);
-
-        lTime = intent.getLongExtra("Time", 0);
-
-        if (bLOGCurrent) {
-            int iTamanoMuestraCorriente = (int)(lTime / lTiempoGrabacionCorriente) + 1000;
-            fCorriente = new float[iTamanoMuestraCorriente];
-        }
 
         bReinicio = intent.getBooleanExtra("Reinicio", false);
 
@@ -266,7 +224,7 @@ public class ServiceDatos extends Service {
         bPrimerDato = new boolean[iNumDevices];
         lDatosRecibidosAnteriores = new long[iNumDevices];
 
-        for (i = 0; i < MAX_SENSOR_NUMBER; i++) {
+        for (int i = 0; i < MAX_SENSOR_NUMBER; i++) {
             if (i < iNumDevices) {
                 bSensores[i][0] = bActivacion[i][0] = bConfigPeriodo[i][0] = bAcelerometro || bGiroscopo || bMagnetometro;
 
@@ -289,13 +247,6 @@ public class ServiceDatos extends Service {
 
         df = new DecimalFormat("###.##");
         sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-
-        if (bLOGCurrent) {
-            String sFichero = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + iNumDevices + "_" + iPeriodo + "_Current.txt";
-            try {
-                fOutCurrent = new FileOutputStream(sFichero, false);
-            } catch (Exception e) {}
-        }
 
         String currentDateandTime = sdf.format(new Date());
         try {
@@ -327,7 +278,7 @@ public class ServiceDatos extends Service {
 
                 int iPosInicio = sUltimaLinea.indexOf('(');
                 sLinea = sUltimaLinea.substring(iPosInicio + 1);
-                for (i = 0; i < MAX_SENSOR_NUMBER; i++) {
+                for (int i = 0; i < MAX_SENSOR_NUMBER; i++) {
                     int iPosComa = sLinea.indexOf(',');
                     int iPosFin = sLinea.indexOf(')');
                     String sCadena1 = sLinea.substring(0, iPosComa);
@@ -352,14 +303,6 @@ public class ServiceDatos extends Service {
 
         batInfo = new BatteryInfoBT();
 
-        ///////////////////////////////////////////////////
-        if (bLOGCurrent) {
-            iMuestraCorriente = 0;
-            for (i = 0; i < fCorriente.length; i++)
-                fCorriente[i] = 0.0f;
-        }
-        ///////////////////////////////////////////////////
-
 
         final TimerTask timerTaskGrabarDatos = new TimerTask() {
             public void run() {
@@ -369,17 +312,6 @@ public class ServiceDatos extends Service {
 
         timerGrabarDatos = new Timer();
         timerGrabarDatos.scheduleAtFixedRate(timerTaskGrabarDatos, lTiempoGrabacionDatos, lTiempoGrabacionDatos);
-
-        final TimerTask timerTaskGrabarCorriente = new TimerTask() {
-            public void run() {
-                guardarCorriente();
-            }
-        };
-
-        if (bLOGCurrent) {
-            timerGrabarCorriente = new Timer();
-            timerGrabarCorriente.scheduleAtFixedRate(timerTaskGrabarCorriente, lTiempoGrabacionCorriente, lTiempoGrabacionCorriente);
-        }
 
         final TimerTask timerTaskComprobarDesconexion = new TimerTask() {
             public void run() {
@@ -397,7 +329,7 @@ public class ServiceDatos extends Service {
         timerComprobarDesconexion = new Timer();
         timerComprobarDesconexion.scheduleAtFixedRate(timerTaskComprobarDesconexion, lDelayComprobacionDesconexion, lTiempoComprobacionDesconexion);
 
-        final TimerTask timerTaskGrabarGPS = new TimerTask() {
+        /*final TimerTask timerTaskGrabarGPS = new TimerTask() {
             public void run() {
                 if (mejorLocaliz != null)
                     envioAsync.setGPS(mejorLocaliz.getLatitude(), mejorLocaliz.getLongitude());
@@ -406,7 +338,7 @@ public class ServiceDatos extends Service {
 
         timerGrabarGPS = new Timer();
         if (bSendServer && bLocation)
-            timerGrabarGPS.scheduleAtFixedRate(timerTaskGrabarGPS, lTiempoGPS, lTiempoGPS);
+            timerGrabarGPS.scheduleAtFixedRate(timerTaskGrabarGPS, lTiempoGPS, lTiempoGPS);*/
 
         realizarConexiones();
 
@@ -433,7 +365,7 @@ public class ServiceDatos extends Service {
         }
     }
 
-    private boolean refreshDeviceCache(BluetoothGatt gatt){
+    /*private boolean refreshDeviceCache(BluetoothGatt gatt){
         try {
             Method localMethod = gatt.getClass().getMethod("refresh", new Class[0]);
             if (localMethod != null) {
@@ -444,7 +376,7 @@ public class ServiceDatos extends Service {
             Log.e("Exception", "ServiceDatos - refreshDeviceCache");
         }
         return false;
-    }
+    }*/
 
 
     private void realizarConexiones() {
@@ -453,13 +385,17 @@ public class ServiceDatos extends Service {
 
         BluetoothDevice device;
         for (int i = 0; i < iNumDevices; i++) {
+            btGatt[i] = null;
+            if (sAddresses[i].compareTo(getString(R.string.Internal_Address)) == 0)
+                continue;
+
             device = adapter.getRemoteDevice(sAddresses[i]);
 
             String sCadena = sdf.format(new Date()) + " Solicitud de conexión con " + sAddresses[i].substring(sAddresses[i].length()-2) + "\n";
             enviarMensaje(sCadena);
 
             btGatt[i] = device.connectGatt(this, true, mBluetoothGattCallback);
-            refreshDeviceCache(btGatt[i]);
+            //refreshDeviceCache(btGatt[i]);
         }
 
         bNetConnected = false;
@@ -493,11 +429,11 @@ public class ServiceDatos extends Service {
             }
         }
 
-        if (bLocation) {
+        /*if (bLocation) {
             locManager = (LocationManager) getSystemService(LOCATION_SERVICE);
             ultimaLocalizacion();
             activarProveedores();
-        }
+        }*/
     }
 
     private void enviarMensaje(String sMsg) {
@@ -509,7 +445,7 @@ public class ServiceDatos extends Service {
         }
     }
 
-    private void ultimaLocalizacion() {
+    /*private void ultimaLocalizacion() {
         try {
             if (locManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 actualizaMejorLocaliz(locManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
@@ -551,9 +487,9 @@ public class ServiceDatos extends Service {
     public LocationListener locListener = new LocationListener() {
         public void onLocationChanged(Location location) {
             actualizaMejorLocaliz(location);
-            /*if (bSendServer) {
+            if (bSendServer) {
                 envioAsync.setGPS(mejorLocaliz.getLatitude(), mejorLocaliz.getLongitude());
-            }*/
+            }
             try {
                 publishSensorValues(LOCALIZACION_LAT, 0, Double.toString(mejorLocaliz.getLatitude()));
                 publishSensorValues(LOCALIZACION_LONG, 0, Double.toString(mejorLocaliz.getLongitude()));
@@ -573,7 +509,7 @@ public class ServiceDatos extends Service {
         public void onStatusChanged(String provider, int status, Bundle extras) {
             activarProveedores();
         }
-    };
+    };*/
 
     private void getBatteryInfo() {
         IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
@@ -591,16 +527,6 @@ public class ServiceDatos extends Service {
         }
     }
 
-    public void guardarCorriente() {
-        getBatteryInfo();
-
-        try {
-            fCorriente[iMuestraCorriente] = batInfo.getCurrentNow();
-            iMuestraCorriente++;
-        } catch (Exception e) {
-            Log.e("Fichero de resultados", e.getMessage(), e);
-        }
-    }
 
     public void grabarMedidas() {
         getBatteryInfo();
@@ -642,30 +568,21 @@ public class ServiceDatos extends Service {
 
         grabarMedidas();
 
-        try {
-            for (int i = 0; i < fCorriente.length; i++) {
-                sCadena = "" + fCorriente[i] + "\n";
-                fOutCurrent.write(sCadena.getBytes());
-            }
-        } catch (Exception e) {}
-
-        //envioAsync.cancel(true);
-
         for (int i = 0; i < iNumDevices; i++) {
-            btGatt[i].disconnect();
-            btGatt[i].close();
+            if (btGatt[i] != null) {
+                btGatt[i].disconnect();
+                btGatt[i].close();
+            }
         }
 
-        if (bLocation)
-            locManager.removeUpdates(locListener);
+        /*if (bLocation)
+            locManager.removeUpdates(locListener);*/
 
         try {
-            if (bLOGCurrent)
-                fOutCurrent.close();
-
             fOut.close();
             fLog.close();
-            envioAsync.finalize();
+            if (bSendServer)
+                envioAsync.finalize();
         } catch (Exception e) {
             Log.e("Error - ", "Error cerrando fichero");
         } catch (Throwable throwable) {

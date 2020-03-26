@@ -16,7 +16,6 @@ public class checkServiceDatos extends Service {
     final static long lDelayReconexion = 4000;
 
     Intent intentServicio = null;
-    Intent intentServicioInterno = null;
 
     boolean bAcelerometro;
     boolean bGiroscopo;
@@ -24,12 +23,10 @@ public class checkServiceDatos extends Service {
 
     boolean bLocation;
     boolean bSendServer;
-    boolean bLOGCurrent;
 
-    long lTime;
+    //long lTime;
 
     int iNumDevices;
-    boolean bInternadDevice;
     int iPeriodo;
     long lTiempoRefrescoDatos;
 
@@ -52,7 +49,6 @@ public class checkServiceDatos extends Service {
 
             intentServicio.putExtra("Periodo", iPeriodo);
             intentServicio.putExtra("NumDevices", iNumDevices);
-            intentServicio.putExtra("InternalDevice", bInternadDevice);
             intentServicio.putExtra("Refresco", lTiempoRefrescoDatos);
             for (int i = 0; i < iNumDevices; i++)
                 intentServicio.putExtra("Address" + i, sAddresses[i]);
@@ -63,9 +59,9 @@ public class checkServiceDatos extends Service {
             intentServicio.putExtra("Location", bLocation);
             intentServicio.putExtra("SendServer", bSendServer);
 
-            intentServicio.putExtra("LOGCurrent", bLOGCurrent);
+            //intentServicio.putExtra("LOGCurrent", bLOGCurrent);
 
-            intentServicio.putExtra("Time", lTime);
+            //intentServicio.putExtra("Time", lTime);
 
             intentServicio.putExtra("Reinicio", false);
 
@@ -76,7 +72,6 @@ public class checkServiceDatos extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         iNumDevices = intent.getIntExtra("NumDevices",1);
-        bInternadDevice = intent.getBooleanExtra("InternalDevice", bInternadDevice);
 
         iPeriodo = intent.getIntExtra("Periodo",20);
         lTiempoRefrescoDatos = intent.getLongExtra("Refresco", 120000);
@@ -87,12 +82,12 @@ public class checkServiceDatos extends Service {
         bGiroscopo = intent.getBooleanExtra("Giroscopo", true);
         bMagnetometro = intent.getBooleanExtra("Magnetometro", true);
 
-        bLOGCurrent = intent.getBooleanExtra("LOGCurrent", false);
+        //bLOGCurrent = intent.getBooleanExtra("LOGCurrent", false);
 
         bLocation = intent.getBooleanExtra("Location", false);
         bSendServer = intent.getBooleanExtra("SendServer", false);
 
-        lTime = intent.getLongExtra("Time", 0);
+        //lTime = intent.getLongExtra("Time", 0);
 
         crearServicio();
 

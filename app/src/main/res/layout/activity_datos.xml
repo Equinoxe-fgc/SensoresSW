@@ -17,12 +17,16 @@
                 android:id="@+id/textViewLatitud"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:textColor="@color/ambient_mode_text"
                 android:visibility="invisible" />
 
             <TextView
                 android:id="@+id/textViewLongitud"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:textColor="@color/ambient_mode_text"
                 android:visibility="invisible" />
 
             <androidx.recyclerview.widget.RecyclerView

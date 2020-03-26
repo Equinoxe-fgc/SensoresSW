@@ -98,7 +98,7 @@ public class MainActivity extends WearableActivity {
             btDeviceInfoList.clearAllBluetoothDeviceInfo();
 
             // Se añade el device interno
-            BluetoothDeviceInfo btDeviceInternal = new BluetoothDeviceInfo(false, getString(R.string.Internal), getString(R.string.Internal));
+            BluetoothDeviceInfo btDeviceInternal = new BluetoothDeviceInfo(false, getString(R.string.Internal), getString(R.string.Internal_Address));
             btDeviceInfoList.addBluetoothDeviceInfo(btDeviceInternal);
 
             adaptador.notifyDataSetChanged();

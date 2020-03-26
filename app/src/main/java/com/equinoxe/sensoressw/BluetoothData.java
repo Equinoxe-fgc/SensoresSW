@@ -2,10 +2,6 @@ package com.equinoxe.sensoressw;
 
 class BluetoothData {
     private String sAddress;
-    private String sHumedad;
-    private String sBarometro;
-    private String sLuz;
-    private String sTemperatura;
     private String sMovimiento1;
     private String sMovimiento2;
     private String sMovimiento3;
@@ -13,10 +9,6 @@ class BluetoothData {
     private String sPaquetes;
 
     BluetoothData(String sAddress) {
-        /*this.sHumedad = "";
-        this.sBarometro = "";
-        this.sLuz = "";
-        this.sTemperatura = "";*/
         this.sAddress = sAddress;
         this.sMovimiento1 = "";
         this.sMovimiento2 = "";
@@ -58,38 +50,6 @@ class BluetoothData {
 
     void setMovimiento3(String sMovimiento3) {
         this.sMovimiento3 = sMovimiento3;
-    }
-
-    String getHumedad() {
-        return sHumedad;
-    }
-
-    String getBarometro() {
-        return sBarometro;
-    }
-
-    String getLuz() {
-        return sLuz;
-    }
-
-    String getTemperatura() {
-        return sTemperatura;
-    }
-
-    void setHumedad(String sHumedad) {
-        this.sHumedad = sHumedad;
-    }
-
-    void setBarometro(String sBarometro) {
-        this.sBarometro = sBarometro;
-    }
-
-    void setLuz(String sLuz) {
-        this.sLuz = sLuz;
-    }
-
-    void setTemperatura(String sTemperatura) {
-        this.sTemperatura = sTemperatura;
     }
 
     void setPaquetes(String sPaquetes) { this.sPaquetes = sPaquetes;

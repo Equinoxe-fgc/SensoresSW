@@ -40,8 +40,7 @@ public class Conexion extends WearableActivity {
     private TextView txtPeriodo;
     private Button btnStart;
     private CheckBox chkGPS;
-    private CheckBox chkSendServer;
-    private CheckBox chkTiempo;
+    //private CheckBox chkSendServer;
     private CheckBox chkLogCurrent;
     private TextView txtTiempo;
     private RecyclerView recyclerViewSensores;
@@ -58,8 +57,7 @@ public class Conexion extends WearableActivity {
         txtPeriodo = findViewById(R.id.txtPeriodo);
         btnStart = findViewById(R.id.btnStart);
         chkGPS = findViewById(R.id.chkGPS);
-        chkSendServer = findViewById(R.id.chkEnvioServidor);
-        chkTiempo = findViewById(R.id.chkTiempo);
+        //chkSendServer = findViewById(R.id.chkEnvioServidor);
         txtTiempo = findViewById(R.id.txtTiempo);
 
         chkLogCurrent = findViewById(R.id.chkLogConsumoCorriente);
@@ -92,18 +90,18 @@ public class Conexion extends WearableActivity {
             btGatt = device.connectGatt(this, false, mBluetoothGattCallback);
 
             handler.removeCallbacks(sendUpdatesToUI);
-
-            chkTiempo.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (((CompoundButton) view).isChecked()) {
-                        txtTiempo.setEnabled(true);
-                    } else {
-                        txtTiempo.setEnabled(false);
-                    }
-                }
-            });
         }
+
+        chkLogCurrent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (((CompoundButton) view).isChecked()) {
+                    txtTiempo.setEnabled(true);
+                } else {
+                    txtTiempo.setEnabled(false);
+                }
+            }
+        });
     }
 
     public void buscarSensoresInternos() {
@@ -239,12 +237,12 @@ public class Conexion extends WearableActivity {
         intent.putExtra("LOGCurrent", chkLogCurrent.isChecked());
 
         intent.putExtra("Location", chkGPS.isChecked());
-        intent.putExtra("SendServer", chkSendServer.isChecked());
-        intent.putExtra("bTime",chkTiempo.isChecked());
+        //intent.putExtra("SendServer", chkSendServer.isChecked());
+        intent.putExtra("SendServer", false);
 
         intent.putExtra("InternalSensor", bInternalDevice);
 
-        if (!chkTiempo.isChecked())
+        if (!chkLogCurrent.isChecked())
             txtTiempo.setText("0");
         long lTime = 1000*Integer.valueOf(txtTiempo.getText().toString());
         intent.putExtra("Time", lTime);
