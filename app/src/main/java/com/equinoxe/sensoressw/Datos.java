@@ -33,6 +33,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 
 public class Datos extends WearableActivity {
+    final static int GIROSCOPO    = 0;
+    final static int ACELEROMETRO = 1;
+    final static int MAGNETOMETRO = 2;
+    final static int HEART_RATE   = 3;
+
     final static long lTiempoGPS = 10 * 1000;                   // Tiempo de toma de muestras de GPS (en ms)
     final static long lTiempoGrabacionCorriente = 10;           // Tiempo de grabación del log de corriente
     final static long lTiempoRefrescoDatos = 10 * 1000;  // Tiempo de muestra de datos
@@ -51,6 +56,7 @@ public class Datos extends WearableActivity {
     boolean bAcelerometro;
     boolean bGiroscopo;
     boolean bMagnetometro;
+    boolean bHeartRate;
 
     boolean bInternalDevice;
 
@@ -108,9 +114,10 @@ public class Datos extends WearableActivity {
             sAddresses[i] = extras.getString("Address" + i);
         iPeriodo = extras.getInt("Periodo");
 
-        bAcelerometro = extras.getBoolean("Acelerometro");
-        bGiroscopo = extras.getBoolean("Giroscopo");
-        bMagnetometro = extras.getBoolean("Magnetometro");
+        bAcelerometro = extras.getBoolean(getString(R.string.Accelerometer));
+        bGiroscopo = extras.getBoolean(getString(R.string.Gyroscope));
+        bMagnetometro = extras.getBoolean(getString(R.string.Magnetometer));
+        bHeartRate = extras.getBoolean(getString(R.string.HeartRate));
 
         bLocation = extras.getBoolean("Location");
         bSendServer = extras.getBoolean("SendServer");
@@ -252,9 +259,10 @@ public class Datos extends WearableActivity {
         if (bInternalDevice) {
             intentServicioDatosInternalSensor = new Intent(this, ServiceDatosInternalSensor.class);
 
-            intentServicioDatosInternalSensor.putExtra("Acelerometro", bAcelerometro);
-            intentServicioDatosInternalSensor.putExtra("Giroscopo", bGiroscopo);
-            intentServicioDatosInternalSensor.putExtra("Magnetometro", bMagnetometro);
+            intentServicioDatosInternalSensor.putExtra(getString(R.string.Accelerometer), bAcelerometro);
+            intentServicioDatosInternalSensor.putExtra(getString(R.string.Gyroscope), bGiroscopo);
+            intentServicioDatosInternalSensor.putExtra(getString(R.string.Magnetometer), bMagnetometro);
+            intentServicioDatosInternalSensor.putExtra(getString(R.string.HeartRate), bHeartRate);
 
             //intentServicioDatosInternalSensor.putExtra("NumDevices", iNumDevices);
 
@@ -305,14 +313,17 @@ public class Datos extends WearableActivity {
                 else {
                     if (iDevice != ServiceDatos.ERROR)
                         switch (iSensor) {
-                            case ServiceDatos.GIROSCOPO:
+                            case GIROSCOPO:
                                 listaDatos.setMovimiento1(iDevice, sCadena);
                                 break;
-                            case ServiceDatos.ACELEROMETRO:
+                            case ACELEROMETRO:
                                 listaDatos.setMovimiento2(iDevice, sCadena);
                                 break;
-                            case ServiceDatos.MAGNETOMETRO:
+                            case MAGNETOMETRO:
                                 listaDatos.setMovimiento3(iDevice, sCadena);
+                                break;
+                            case HEART_RATE:
+                                listaDatos.setHeartRate(iDevice, sCadena);
                                 break;
 
                             /*case ServiceDatos.LOCALIZACION_LAT:

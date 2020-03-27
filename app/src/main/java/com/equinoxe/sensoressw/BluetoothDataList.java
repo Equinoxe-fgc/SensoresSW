@@ -38,6 +38,10 @@ class BluetoothDataList {
         vectorData.get(iPos).setMovimiento3(sMovimiento3);
     }
 
+    void setHeartRate(int iPos, String sHeartRate) {
+        vectorData.get(iPos).setHeartRate(sHeartRate);
+    }
+
     void setPaquetes(int iPos, String sPaquetes) {
         vectorData.get(iPos).setPaquetes(sPaquetes);
     }

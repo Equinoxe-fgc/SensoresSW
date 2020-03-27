@@ -5,6 +5,7 @@ class BluetoothData {
     private String sMovimiento1;
     private String sMovimiento2;
     private String sMovimiento3;
+    private String sHeartRate;
 
     private String sPaquetes;
 
@@ -13,6 +14,7 @@ class BluetoothData {
         this.sMovimiento1 = "";
         this.sMovimiento2 = "";
         this.sMovimiento3 = "";
+        this.sHeartRate = "";
 
         this.sPaquetes = "";
     }
@@ -33,6 +35,8 @@ class BluetoothData {
         return sMovimiento3;
     }
 
+    String getHeartRate() {return sHeartRate;}
+
     String getPaquetes() { return sPaquetes;
     }
 
@@ -51,6 +55,8 @@ class BluetoothData {
     void setMovimiento3(String sMovimiento3) {
         this.sMovimiento3 = sMovimiento3;
     }
+
+    void setHeartRate(String sHeartRate) {this.sHeartRate = sHeartRate;}
 
     void setPaquetes(String sPaquetes) { this.sPaquetes = sPaquetes;
     }

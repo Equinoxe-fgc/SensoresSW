@@ -4,7 +4,7 @@
     This string is used for square devices and overridden by hello_world in
     values-round/strings.xml for round devices.
     -->
-    <string name="CompileDate">26/03/2020</string>
+    <string name="CompileDate">27/03/2020</string>
     <string name="scan">Scan</string>
     <string name="stop">Stop</string>
     <string name="connect">Connect selected</string>
@@ -45,6 +45,7 @@
     <string name="AccelerometerUnit">G</string>
     <string name="GyroscopeUnit">º/s</string>
     <string name="MagnetometerUnit">uT</string>
+    <string name="HeartRate">Heart Rate</string>
 
     <string name="channel_name">CANAL_NOTIFICACION</string>
     <string name="channel_description">Channel for notifications</string>

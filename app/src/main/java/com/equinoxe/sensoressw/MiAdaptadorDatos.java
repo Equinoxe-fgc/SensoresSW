@@ -33,6 +33,7 @@ public class MiAdaptadorDatos extends RecyclerView.Adapter<MiAdaptadorDatos.View
         holder.textViewMovimiento1.setText(info.getMovimiento1());
         holder.textViewMovimiento2.setText(info.getMovimiento2());
         holder.textViewMovimiento3.setText(info.getMovimiento3());
+        holder.textHeartRate.setText(info.getHeartRate());
         holder.textViewPaquetes.setText(info.getPaquetes());
     }
 
@@ -46,6 +47,7 @@ public class MiAdaptadorDatos extends RecyclerView.Adapter<MiAdaptadorDatos.View
         TextView textViewMovimiento1;
         TextView textViewMovimiento2;
         TextView textViewMovimiento3;
+        TextView textHeartRate;
 
         TextView textViewPaquetes;
 
@@ -55,6 +57,7 @@ public class MiAdaptadorDatos extends RecyclerView.Adapter<MiAdaptadorDatos.View
             textViewMovimiento1 = itemView.findViewById(R.id.textViewMovimiento1);
             textViewMovimiento2 = itemView.findViewById(R.id.textViewMovimiento2);
             textViewMovimiento3 = itemView.findViewById(R.id.textViewMovimiento3);
+            textHeartRate = itemView.findViewById(R.id.textViewHeartRate);
 
             textViewPaquetes = itemView.findViewById(R.id.textPaquetes);
         }

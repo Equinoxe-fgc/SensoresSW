@@ -124,6 +124,10 @@ public class Conexion extends WearableActivity {
                     if (!listaServicesInfo.isPresent(getString(R.string.Magnetometer)))
                         serviceInfo = new BluetoothServiceInfo(true, getString(R.string.Magnetometer), getString(R.string.Internal));
                     break;
+                case Sensor.TYPE_HEART_RATE:
+                    if (!listaServicesInfo.isPresent(getString(R.string.HeartRate)))
+                        serviceInfo = new BluetoothServiceInfo(true, getString(R.string.HeartRate), getString(R.string.Internal));
+                    break;
             }
 
             if (serviceInfo != null)
@@ -227,11 +231,13 @@ public class Conexion extends WearableActivity {
             String sName = serviceInfo.getName();
 
             if (sName.compareTo(getString(R.string.Gyroscope)) == 0)
-                intent.putExtra("Giroscopo", serviceInfo.isSelected());
+                intent.putExtra(getString(R.string.Gyroscope), serviceInfo.isSelected());
             else if (sName.compareTo(getString(R.string.Accelerometer)) == 0)
-                intent.putExtra("Acelerometro", serviceInfo.isSelected());
+                intent.putExtra(getString(R.string.Accelerometer), serviceInfo.isSelected());
             else if (sName.compareTo(getString(R.string.Magnetometer)) == 0)
-                intent.putExtra("Magnetometro", serviceInfo.isSelected());
+                intent.putExtra(getString(R.string.Magnetometer), serviceInfo.isSelected());
+            else if (sName.compareTo(getString(R.string.HeartRate)) == 0)
+                intent.putExtra(getString(R.string.HeartRate), serviceInfo.isSelected());
         }
 
         intent.putExtra("LOGCurrent", chkLogCurrent.isChecked());

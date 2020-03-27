@@ -4,11 +4,6 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
         <TextView
             android:id="@+id/textViewAddress"
             android:layout_width="match_parent"
@@ -44,7 +39,15 @@
             android:textAlignment="center"
             android:textColor="@android:color/holo_orange_dark" />
 
-    </LinearLayout>
+    <TextView
+        android:id="@+id/textViewHeartRate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:textAlignment="center"
+        android:textColor="@android:color/holo_blue_dark" />
+
 
     <TextView
         android:id="@+id/textPaquetes"

@@ -18,19 +18,15 @@ import android.os.Message;
 import java.text.DecimalFormat;
 
 public class ServiceDatosInternalSensor extends Service implements SensorEventListener {
-    final static int GIROSCOPO    = 0;
-    final static int ACELEROMETRO = 1;
-    final static int MAGNETOMETRO = 2;
-
     public static final String NOTIFICATION = "com.equinoxe.bluetoothle.android.service.receiver";
 
-    private boolean bAcelerometro, bGiroscopo, bMagnetometro;
+    private boolean bAcelerometro, bGiroscopo, bMagnetometro, bHeartRate;
     private int iNumDevice;
 
     private SensorManager sensorManager;
-    private Sensor sensorAcelerometro, sensorGiroscopo, sensorMagnetometro;
+    private Sensor sensorAcelerometro, sensorGiroscopo, sensorMagnetometro, sensorHeartRate;
 
-    String sCadenaGiroscopo, sCadenaMagnetometro, sCadenaAcelerometro;
+    String sCadenaGiroscopo, sCadenaMagnetometro, sCadenaAcelerometro, sCadenaHeartRate;
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
 
@@ -55,14 +51,17 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
         @Override
         public void handleMessage(Message msg) {
             switch (msg.arg1) {
-                case GIROSCOPO:
-                    publishSensorValues(GIROSCOPO, msg.arg2, sCadenaGiroscopo);
+                case Datos.GIROSCOPO:
+                    publishSensorValues(Datos.GIROSCOPO, msg.arg2, sCadenaGiroscopo);
                     break;
-                case MAGNETOMETRO:
-                    publishSensorValues(MAGNETOMETRO, msg.arg2, sCadenaMagnetometro);
+                case Datos.MAGNETOMETRO:
+                    publishSensorValues(Datos.MAGNETOMETRO, msg.arg2, sCadenaMagnetometro);
                     break;
-                case ACELEROMETRO:
-                    publishSensorValues(ACELEROMETRO, msg.arg2, sCadenaAcelerometro);
+                case Datos.ACELEROMETRO:
+                    publishSensorValues(Datos.ACELEROMETRO, msg.arg2, sCadenaAcelerometro);
+                    break;
+                case Datos.HEART_RATE:
+                    publishSensorValues(Datos.HEART_RATE, msg.arg2, sCadenaHeartRate);
                     break;
             }
         }
@@ -76,9 +75,10 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
 
         iNumDevice = intent.getIntExtra("NumDevices", 1) - 1;
 
-        bAcelerometro = intent.getBooleanExtra("Acelerometro", true);
-        bGiroscopo = intent.getBooleanExtra("Giroscopo", true);
-        bMagnetometro = intent.getBooleanExtra("Magnetometro", true);
+        bAcelerometro = intent.getBooleanExtra(getString(R.string.Accelerometer), true);
+        bGiroscopo = intent.getBooleanExtra(getString(R.string.Gyroscope), true);
+        bMagnetometro = intent.getBooleanExtra(getString(R.string.Magnetometer), true);
+        bHeartRate = intent.getBooleanExtra(getString(R.string.HeartRate), true);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (bAcelerometro) {
@@ -92,6 +92,10 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
         if (bMagnetometro) {
             sensorMagnetometro = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
             sensorManager.registerListener(this, sensorMagnetometro, SensorManager.SENSOR_DELAY_GAME);
+        }
+        if (bHeartRate) {
+            sensorHeartRate = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
+            sensorManager.registerListener(this, sensorHeartRate, SensorManager.SENSOR_DELAY_GAME);
         }
 
         Message msg = mServiceHandler.obtainMessage();
@@ -110,19 +114,23 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
                 sCadenaAcelerometro = "A -> " + df.format(event.values[0]) + " "
                                               + df.format(event.values[1]) + " "
                                               + df.format(event.values[2]);
-                msg.arg1 = ACELEROMETRO;
+                msg.arg1 = Datos.ACELEROMETRO;
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 sCadenaGiroscopo = "G ->  " + df.format(event.values[0]) + " "
                                             + df.format(event.values[1]) + " "
                                             + df.format(event.values[2]);
-                msg.arg1 = GIROSCOPO;
+                msg.arg1 = Datos.GIROSCOPO;
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
                 sCadenaMagnetometro = "M ->  " + df.format(event.values[0]) + " "
                                                + df.format(event.values[1]) + " "
                                                + df.format(event.values[2]);
-                msg.arg1 = MAGNETOMETRO;
+                msg.arg1 = Datos.MAGNETOMETRO;
+                break;
+            case Sensor.TYPE_HEART_RATE:
+                sCadenaHeartRate = "HR -> " + df.format(event.values[0]);
+                msg.arg1 = Datos.HEART_RATE;
                 break;
         }
 
@@ -172,6 +180,9 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
         }
         if (bMagnetometro) {
             sensorManager.unregisterListener(this, sensorMagnetometro);
+        }
+        if (bHeartRate) {
+            sensorManager.unregisterListener(this, sensorHeartRate);
         }
     }
 
