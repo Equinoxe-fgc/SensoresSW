@@ -15,12 +15,15 @@ import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.FileOutputStream;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -37,6 +40,10 @@ public class Datos extends WearableActivity {
     final static int ACELEROMETRO = 1;
     final static int MAGNETOMETRO = 2;
     final static int HEART_RATE   = 3;
+
+    public final static int PAQUETES = 9;
+    public final static int ERROR = 20;
+    public final static int MSG = 30;
 
     final static long lTiempoGPS = 10 * 1000;                   // Tiempo de toma de muestras de GPS (en ms)
     final static long lTiempoGrabacionCorriente = 10;           // Tiempo de grabación del log de corriente
@@ -78,7 +85,7 @@ public class Datos extends WearableActivity {
 
     Timer timerGrabarCorriente;
     FileOutputStream fOutCurrent;
-    boolean bLOGCurrent;
+    boolean bLOGCurrent, bLogStats, bLogData;
     int iMuestraCorriente;
     float []fCorriente;
     BatteryManager mBatteryManager;
@@ -88,6 +95,8 @@ public class Datos extends WearableActivity {
     private LocationCallback locationCallback;
     LocationRequest locationRequest = null;
 
+    SimpleDateFormat sdf;
+    FileOutputStream fOut;
 
     @Override
     protected void onResume() {
@@ -126,6 +135,8 @@ public class Datos extends WearableActivity {
 
         lTime = extras.getLong("Time");
         bLOGCurrent = extras.getBoolean("LOGCurrent");
+        bLogStats = extras.getBoolean("LogStats");
+        bLogData = extras.getBoolean("LogData");
 
         recyclerViewDatos = findViewById(R.id.recycler_viewDatos);
         txtLatitud = findViewById(R.id.textViewLatitud);
@@ -152,6 +163,18 @@ public class Datos extends WearableActivity {
 
         bServicioParado = true;
 
+        if (bLogData) {
+            sdf = new SimpleDateFormat("yyyyMMdd_HHmm");
+            String currentDateandTime = sdf.format(new Date());
+
+            sdf = new SimpleDateFormat("HHmmss_SS");
+            String sFichero = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + currentDateandTime + "__DataLog.txt";
+            try {
+                fOut = new FileOutputStream(sFichero, false);
+            } catch (Exception e) {
+                Toast.makeText(this, getResources().getString(R.string.ERROR_FICHERO), Toast.LENGTH_LONG).show();
+            }
+        }
 
         if (bLOGCurrent) {
             mBatteryManager = (BatteryManager) this.getSystemService(Context.BATTERY_SERVICE);
@@ -203,10 +226,12 @@ public class Datos extends WearableActivity {
                         return;
                     }
                     for (Location location : locationResult.getLocations()) {
-                        txtLatitud.setText("Lat: " + Double.toString(location.getLatitude()));
-                        txtLongitud.setText("Long: " + Double.toString(location.getLongitude()));
+                        String sMensaje = "Lat: " + location.getLatitude();
+                        txtLatitud.setText(sMensaje);
+                        sMensaje = "Long: " + location.getLongitude();
+                        txtLongitud.setText(sMensaje);
                     }
-                };
+                }
             };
             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback,null /* Looper */);
 
@@ -281,15 +306,15 @@ public class Datos extends WearableActivity {
             }
 
             intentChkServicio.putExtra("NumDevices", iNumDevices);
+            intentChkServicio.putExtra("InternalDevice", bInternalDevice);
 
             intentChkServicio.putExtra("Acelerometro", bAcelerometro);
             intentChkServicio.putExtra("Giroscopo", bGiroscopo);
             intentChkServicio.putExtra("Magnetometro", bMagnetometro);
             intentChkServicio.putExtra("Location", bLocation);
             intentChkServicio.putExtra("SendServer", bSendServer);
-            //intentChkServicio.putExtra("LOGCurrent", bLogCurrent);
-
-            //intentChkServicio.putExtra("Time", lTime);
+            intentChkServicio.putExtra("LogData", bLogData);
+            intentChkServicio.putExtra("LogStats", bLogStats);
 
             startService(intentChkServicio);
         }
@@ -307,11 +332,17 @@ public class Datos extends WearableActivity {
                 int iDevice = bundle.getInt("Device");
                 String sCadena = bundle.getString("Cadena");
 
-                if (iDevice == ServiceDatos.MSG) {
+                if (iDevice == MSG) {
                     txtMensajes.append(sCadena.substring(16));
                 }
                 else {
-                    if (iDevice != ServiceDatos.ERROR)
+                    if (iDevice != ERROR) {
+                        if (iSensor != PAQUETES) {
+                            try {
+                                String sCadenaFichero =  sdf.format(new Date()) + ":" + iDevice + ":" + sCadena + "\n";
+                                fOut.write(sCadenaFichero.getBytes());
+                            } catch (Exception e) {}
+                        }
                         switch (iSensor) {
                             case GIROSCOPO:
                                 listaDatos.setMovimiento1(iDevice, sCadena);
@@ -332,10 +363,11 @@ public class Datos extends WearableActivity {
                             case ServiceDatos.LOCALIZACION_LONG:
                                 txtLongitud.setText("Long: " + sCadena);
                                 break;*/
-                            case ServiceDatos.PAQUETES:
+                            case PAQUETES:
                                 listaDatos.setPaquetes(iDevice, sCadena);
                                 break;
                         }
+                    }
                 }
             }
         }
@@ -350,13 +382,18 @@ public class Datos extends WearableActivity {
     }
 
     public  void btnPararClick(View v) {
+        if (bLogData) {
+            try {
+                fOut.close();
+            } catch (Exception e) {}
+        }
         if (bLOGCurrent) {
             timerGrabarCorriente.cancel();
 
             String sCadena;
             try {
-                for (int i = 0; i < fCorriente.length; i++) {
-                    sCadena = "" + fCorriente[i] + "\n";
+                for (float valor: fCorriente) {
+                    sCadena = "" + valor + "\n";
                     fOutCurrent.write(sCadena.getBytes());
                 }
                 fOutCurrent.close();

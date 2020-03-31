@@ -117,15 +117,15 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
                 msg.arg1 = Datos.ACELEROMETRO;
                 break;
             case Sensor.TYPE_GYROSCOPE:
-                sCadenaGiroscopo = "G ->  " + df.format(event.values[0]) + " "
-                                            + df.format(event.values[1]) + " "
-                                            + df.format(event.values[2]);
+                sCadenaGiroscopo = "G -> " + df.format(event.values[0]) + " "
+                                           + df.format(event.values[1]) + " "
+                                           + df.format(event.values[2]);
                 msg.arg1 = Datos.GIROSCOPO;
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
-                sCadenaMagnetometro = "M ->  " + df.format(event.values[0]) + " "
-                                               + df.format(event.values[1]) + " "
-                                               + df.format(event.values[2]);
+                sCadenaMagnetometro = "M -> " + df.format(event.values[0]) + " "
+                                              + df.format(event.values[1]) + " "
+                                              + df.format(event.values[2]);
                 msg.arg1 = Datos.MAGNETOMETRO;
                 break;
             case Sensor.TYPE_HEART_RATE:

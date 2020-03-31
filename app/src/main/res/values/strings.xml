@@ -4,7 +4,7 @@
     This string is used for square devices and overridden by hello_world in
     values-round/strings.xml for round devices.
     -->
-    <string name="CompileDate">27/03/2020</string>
+    <string name="CompileDate">31/03/2020</string>
     <string name="scan">Scan</string>
     <string name="stop">Stop</string>
     <string name="connect">Connect selected</string>
@@ -54,4 +54,6 @@
     <string name="title_activity_conexion">Connection</string>
     <string name="Internal">Internal sensor</string>
     <string name="Internal_Address">00:00:00:00:00:00</string>
+    <string name="LogStats">Log stats</string>
+    <string name="LogData">Log data</string>
 </resources>

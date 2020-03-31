@@ -24,8 +24,10 @@ public class checkServiceDatos extends Service {
     boolean bLocation;
     boolean bSendServer;
 
-    //long lTime;
+    boolean bLogStats;
+    boolean bLogData;
 
+    boolean bInternalDevice;
     int iNumDevices;
     int iPeriodo;
     long lTiempoRefrescoDatos;
@@ -58,10 +60,10 @@ public class checkServiceDatos extends Service {
             intentServicio.putExtra("Magnetometro", bMagnetometro);
             intentServicio.putExtra("Location", bLocation);
             intentServicio.putExtra("SendServer", bSendServer);
+            intentServicio.putExtra("InternalDevice", bInternalDevice);
 
-            //intentServicio.putExtra("LOGCurrent", bLOGCurrent);
-
-            //intentServicio.putExtra("Time", lTime);
+            intentServicio.putExtra("LogStats", bLogStats);
+            intentServicio.putExtra("LogData", bLogData);
 
             intentServicio.putExtra("Reinicio", false);
 
@@ -82,12 +84,12 @@ public class checkServiceDatos extends Service {
         bGiroscopo = intent.getBooleanExtra("Giroscopo", true);
         bMagnetometro = intent.getBooleanExtra("Magnetometro", true);
 
-        //bLOGCurrent = intent.getBooleanExtra("LOGCurrent", false);
+        bLogStats = intent.getBooleanExtra("LogStats", false);
+        bLogData = intent.getBooleanExtra("LogData", false);
 
         bLocation = intent.getBooleanExtra("Location", false);
         bSendServer = intent.getBooleanExtra("SendServer", false);
-
-        //lTime = intent.getLongExtra("Time", 0);
+        bInternalDevice = intent.getBooleanExtra("InternalDevice", false);
 
         crearServicio();
 
@@ -104,7 +106,7 @@ public class checkServiceDatos extends Service {
             if (bundle != null) {
                 int iDevice = bundle.getInt("Device");
 
-                if (iDevice == ServiceDatos.ERROR) {
+                if (iDevice == Datos.ERROR) {
                     stopService(intentServicio);
                     try {
                         sleep(lDelayReconexion);

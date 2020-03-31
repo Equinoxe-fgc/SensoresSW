@@ -8,7 +8,6 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
@@ -19,7 +18,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -42,6 +40,7 @@ public class Conexion extends WearableActivity {
     private CheckBox chkGPS;
     //private CheckBox chkSendServer;
     private CheckBox chkLogCurrent;
+    private CheckBox chkLogStats, chkLogData;
     private TextView txtTiempo;
     private RecyclerView recyclerViewSensores;
     private MiAdaptadorSensores adaptadorSensores;
@@ -58,9 +57,11 @@ public class Conexion extends WearableActivity {
         btnStart = findViewById(R.id.btnStart);
         chkGPS = findViewById(R.id.chkGPS);
         //chkSendServer = findViewById(R.id.chkEnvioServidor);
-        txtTiempo = findViewById(R.id.txtTiempo);
 
+        chkLogStats = findViewById(R.id.chkLogStats);
+        chkLogData = findViewById(R.id.chkLogData);
         chkLogCurrent = findViewById(R.id.chkLogConsumoCorriente);
+        txtTiempo = findViewById(R.id.txtTiempo);
 
         listaServicesInfo = new BluetoothServiceInfoList();
 
@@ -105,7 +106,7 @@ public class Conexion extends WearableActivity {
     }
 
     public void buscarSensoresInternos() {
-        BluetoothServiceInfo serviceInfo = null;
+        BluetoothServiceInfo serviceInfo;
         SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         List<Sensor> lista = sensorManager.getSensorList(Sensor.TYPE_ALL);
@@ -240,6 +241,8 @@ public class Conexion extends WearableActivity {
                 intent.putExtra(getString(R.string.HeartRate), serviceInfo.isSelected());
         }
 
+        intent.putExtra("LogStats", chkLogStats.isChecked());
+        intent.putExtra("LogData", chkLogData.isChecked());
         intent.putExtra("LOGCurrent", chkLogCurrent.isChecked());
 
         intent.putExtra("Location", chkGPS.isChecked());
@@ -250,7 +253,7 @@ public class Conexion extends WearableActivity {
 
         if (!chkLogCurrent.isChecked())
             txtTiempo.setText("0");
-        long lTime = 1000*Integer.valueOf(txtTiempo.getText().toString());
+        long lTime = 1000*Integer.parseInt(txtTiempo.getText().toString());
         intent.putExtra("Time", lTime);
 
         startActivity(intent);
