@@ -26,6 +26,7 @@ public class checkServiceDatos extends Service {
 
     boolean bLogStats;
     boolean bLogData;
+    String sFileNameDataLog;
 
     boolean bInternalDevice;
     int iNumDevices;
@@ -64,6 +65,7 @@ public class checkServiceDatos extends Service {
 
             intentServicio.putExtra("LogStats", bLogStats);
             intentServicio.putExtra("LogData", bLogData);
+            intentServicio.putExtra("FileNameDataLog", sFileNameDataLog);
 
             intentServicio.putExtra("Reinicio", false);
 
@@ -86,6 +88,7 @@ public class checkServiceDatos extends Service {
 
         bLogStats = intent.getBooleanExtra("LogStats", false);
         bLogData = intent.getBooleanExtra("LogData", false);
+        sFileNameDataLog = intent.getStringExtra("FileNameDataLog");
 
         bLocation = intent.getBooleanExtra("Location", false);
         bSendServer = intent.getBooleanExtra("SendServer", false);

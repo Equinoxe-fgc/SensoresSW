@@ -40,6 +40,7 @@ import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
@@ -90,6 +91,8 @@ public class ServiceDatos extends Service {
     boolean bLocation;
     boolean bLogStats;
     boolean bLogData;
+    String sFileNameDataLog;
+    FileOutputStream fOutDataLog;
 
     boolean bNetConnected;
     EnvioDatosSocket envioAsync;
@@ -213,6 +216,8 @@ public class ServiceDatos extends Service {
 
         bLogStats = intent.getBooleanExtra("LogStats", true);
         bLogData = intent.getBooleanExtra("LogData", false);
+        sFileNameDataLog = intent.getStringExtra("FileNameLogData");
+
         bReinicio = intent.getBooleanExtra("Reinicio", false);
 
         bInternadDevice = intent.getBooleanExtra("InternalDevice", false);
@@ -250,8 +255,21 @@ public class ServiceDatos extends Service {
         btGatt = new BluetoothGatt[iNumDevices];
 
         df = new DecimalFormat("###.##");
-        sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.UK);
 
+        if (bLogData) {
+            sdf = new SimpleDateFormat("yyyyMMdd_HHmm", Locale.UK);
+            String currentDateandTime = sdf.format(new Date());
+
+            sdf = new SimpleDateFormat("HHmmss_SS", Locale.UK);
+            sFileNameDataLog = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + currentDateandTime + "__DataLog.txt";
+            try {
+                fOutDataLog = new FileOutputStream(sFileNameDataLog, true);
+            } catch (Exception e) {
+                Toast.makeText(this, getResources().getString(R.string.ERROR_FICHERO), Toast.LENGTH_LONG).show();
+            }
+        }
+        
         if (bLogStats) {
             String currentDateandTime = sdf.format(new Date());
             try {
@@ -322,7 +340,8 @@ public class ServiceDatos extends Service {
 
         final TimerTask timerTaskComprobarDesconexion = new TimerTask() {
             public void run() {
-                for (int i = 0; i < iNumDevices && !bReiniciar; i++)
+                int i = bInternadDevice?1:0;
+                for (; i < iNumDevices && !bReiniciar; i++)
                     if (lDatosRecibidos[i] == lDatosRecibidosAnteriores[i] /*&& lDatosRecibidos[i] != 0*/) {
                         bReiniciar = true;
                         String sCadena = sdf.format(new Date()) + " ERROR: No recibidos datos de " + sAddresses[i] + "\n";
@@ -447,11 +466,11 @@ public class ServiceDatos extends Service {
 
         try {
             String sCadena = sdf.format(new Date()) + ":" +
-                    batInfo.getBatteryLevel() + ":" +
-                    batInfo.getVoltaje() + ":" +
-                    batInfo.getTemperature() + ":" +
-                    batInfo.getCurrentAverage() + ":" +
-                    batInfo.getCurrentNow() + " - ";
+                    batInfo.getBatteryLevel() + ":";
+                    //batInfo.getVoltaje() + ":" +
+                    //batInfo.getTemperature() + ":" +
+                    //batInfo.getCurrentAverage() + ":" +
+                    //batInfo.getCurrentNow() + " - ";
             fOut.write(sCadena.getBytes());
 
             long lDatosRecibidosTotal = 0;
@@ -472,6 +491,11 @@ public class ServiceDatos extends Service {
 
     private void cerrarConexiones() {
         bSensing = false;
+
+        if (bLogData)
+            try {
+                fOutDataLog.close();
+            } catch (Exception e) {}
 
         if (bLogStats) {
             String sCadena = sdf.format(new Date()) + " Cerrando conexiones\n";
@@ -603,7 +627,8 @@ public class ServiceDatos extends Service {
 
                 lDatosRecibidos[iDevice]++;
 
-                boolean bDatosParaEnvio = bLogData || ((lDatosRecibidos[iDevice] + lMensajesPorSegundo) % lMensajesParaEnvio) == 0;
+                //boolean bDatosParaEnvio = bLogData || ((lDatosRecibidos[iDevice] + lMensajesPorSegundo) % lMensajesParaEnvio) == 0;
+                boolean bDatosParaEnvio = ((lDatosRecibidos[iDevice] + lMensajesPorSegundo) % lMensajesParaEnvio) == 0;
                 procesaMovimiento(movimiento[iDevice], iDevice, bDatosParaEnvio);
                 if (bDatosParaEnvio) {
                     String sCadena = "   Recibidos: " + lDatosRecibidos[iDevice] + " - Perdidos: " + lDatosPerdidos[iDevice];
@@ -839,7 +864,7 @@ public class ServiceDatos extends Service {
         valorGiroZ |= aux;
         fValorGiroZ = (float) (((float) valorGiroZ / 65536.0) * 500.0);
 
-        sCadenaGiroscopo[iDevice] = "G -> " + df.format(fValorGiroX) + " ";
+        sCadenaGiroscopo[iDevice] = "G: " + df.format(fValorGiroX) + " ";
         sCadenaGiroscopo[iDevice] += df.format(fValorGiroY) + " ";
         sCadenaGiroscopo[iDevice] += df.format(fValorGiroZ);
 
@@ -873,7 +898,7 @@ public class ServiceDatos extends Service {
         valorAcelZ |= aux;
         fValorAcelZ = (float) valorAcelZ / (32768f / 4f);
 
-        sCadenaAcelerometro[iDevice] = "A -> " + df.format(fValorAcelX) + " ";
+        sCadenaAcelerometro[iDevice] = "A: " + df.format(fValorAcelX) + " ";
         sCadenaAcelerometro[iDevice] += df.format(fValorAcelY) + " ";
         sCadenaAcelerometro[iDevice] += df.format(fValorAcelZ);
 
@@ -906,7 +931,7 @@ public class ServiceDatos extends Service {
         valorMagZ |= aux;
         fValorMagZ = (float) valorMagZ;
 
-        sCadenaMagnetometro[iDevice] =  "M -> " + fValorMagX + " ";
+        sCadenaMagnetometro[iDevice] =  "M: " + fValorMagX + " ";
         sCadenaMagnetometro[iDevice] += fValorMagY + " " ;
         sCadenaMagnetometro[iDevice] += fValorMagZ;
 
@@ -917,6 +942,14 @@ public class ServiceDatos extends Service {
             mServiceHandler.sendMessage(msg);
         }
 
+        if (bLogData) {
+            try {
+                String sCadenaFichero =  sdf.format(new Date()) + ":" + iDevice + ":" + sCadenaAcelerometro[iDevice] +
+                                                                                  " " + sCadenaGiroscopo[iDevice] +
+                                                                                  " " + sCadenaMagnetometro[iDevice] + "\n";
+                fOutDataLog.write(sCadenaFichero.getBytes());
+            } catch (Exception e) {}
+        }
     }
 
     private void publishSensorValues(int iSensor, int iDevice, String sCadena) {
