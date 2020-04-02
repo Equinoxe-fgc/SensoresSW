@@ -216,7 +216,7 @@ public class ServiceDatos extends Service {
 
         bLogStats = intent.getBooleanExtra("LogStats", true);
         bLogData = intent.getBooleanExtra("LogData", false);
-        sFileNameDataLog = intent.getStringExtra("FileNameLogData");
+        sFileNameDataLog = intent.getStringExtra("FileNameDataLog");
 
         bReinicio = intent.getBooleanExtra("Reinicio", false);
 
@@ -258,11 +258,7 @@ public class ServiceDatos extends Service {
         sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.UK);
 
         if (bLogData) {
-            sdf = new SimpleDateFormat("yyyyMMdd_HHmm", Locale.UK);
-            String currentDateandTime = sdf.format(new Date());
-
             sdf = new SimpleDateFormat("HHmmss_SS", Locale.UK);
-            sFileNameDataLog = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + currentDateandTime + "__DataLog.txt";
             try {
                 fOutDataLog = new FileOutputStream(sFileNameDataLog, true);
             } catch (Exception e) {
@@ -492,10 +488,10 @@ public class ServiceDatos extends Service {
     private void cerrarConexiones() {
         bSensing = false;
 
-        if (bLogData)
+        /*if (bLogData)
             try {
                 fOutDataLog.close();
-            } catch (Exception e) {}
+            } catch (Exception e) {} */
 
         if (bLogStats) {
             String sCadena = sdf.format(new Date()) + " Cerrando conexiones\n";

@@ -113,11 +113,7 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
         }
 
         if (bLogData) {
-            sdf = new SimpleDateFormat("yyyyMMdd_HHmm", Locale.UK);
-            String currentDateandTime = sdf.format(new Date());
-
             sdf = new SimpleDateFormat("HHmmss_SS", Locale.UK);
-            sFileNameDataLog = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + currentDateandTime + "__DataLog.txt";
             try {
                 fOutDataLog = new FileOutputStream(sFileNameDataLog, true);
             } catch (Exception e) {
@@ -211,11 +207,11 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
     public void onDestroy() {
         super.onDestroy();
 
-        if (bLogData) {
+        /*if (bLogData) {
             try {
                 fOutDataLog.close();
             } catch (Exception e) {}
-        }
+        }*/
 
         if (bAcelerometro) {
             sensorManager.unregisterListener(this, sensorAcelerometro);

@@ -173,7 +173,6 @@ public class Datos extends WearableActivity {
             sFileNameDataLog = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + currentDateandTime + "__DataLog.txt";
             try {
                 fOutDataLog = new FileOutputStream(sFileNameDataLog, false);
-                fOutDataLog.close();
             } catch (Exception e) {
                 Toast.makeText(this, getResources().getString(R.string.ERROR_FICHERO), Toast.LENGTH_LONG).show();
             }
@@ -390,11 +389,6 @@ public class Datos extends WearableActivity {
     }
 
     public  void btnPararClick(View v) {
-        /*if (bLogData) {
-            try {
-                fOutDataLog.close();
-            } catch (Exception e) {}
-        }*/
         if (bLOGCurrent) {
             timerGrabarCorriente.cancel();
 
@@ -414,6 +408,12 @@ public class Datos extends WearableActivity {
 
         if (!bInternalDevice || (bInternalDevice && iNumDevices > 1))
             stopService(intentChkServicio);
+
+        if (bLogData) {
+            try {
+                fOutDataLog.close();
+            } catch (Exception e) {}
+        }
 
         unregisterReceiver(receiver);
 
