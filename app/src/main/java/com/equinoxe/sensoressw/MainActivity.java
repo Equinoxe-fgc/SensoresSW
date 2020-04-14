@@ -76,7 +76,7 @@ public class MainActivity extends WearableActivity {
         btnScanOnClick(btnScan);
 
         // Enables Always-on
-        setAmbientEnabled();
+        //setAmbientEnabled();
     }
 
     public void btnScanOnClick(View v) {

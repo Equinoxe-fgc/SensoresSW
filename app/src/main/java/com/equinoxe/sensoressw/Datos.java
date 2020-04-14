@@ -260,7 +260,7 @@ public class Datos extends WearableActivity {
             timerGPS.schedule(timerTaskGPS, lTiempoGPS);*/
         }
 
-        handlerDatos = new Handler();
+        /*handlerDatos = new Handler();
         runOnUiThread(new Runnable(){
             @Override
             public void run(){
@@ -270,7 +270,16 @@ public class Datos extends WearableActivity {
                 handlerDatos.postDelayed(this, lTiempoRefrescoDatos);
 
             }
-        });
+        });*/
+
+        setAmbientEnabled();
+    }
+
+    @Override
+    public void onUpdateAmbient() {
+        super.onUpdateAmbient();
+
+        adaptadorDatos.notifyDataSetChanged();
     }
 
     public void guardarCorriente() {
