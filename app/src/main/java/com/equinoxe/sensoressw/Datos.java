@@ -48,7 +48,7 @@ public class Datos extends WearableActivity {
 
     final static long lTiempoGPS = 10 * 1000;                   // Tiempo de toma de muestras de GPS (en ms)
     final static long lTiempoGrabacionCorriente = 10;           // Tiempo de grabación del log de corriente
-    final static long lTiempoRefrescoDatos = 10 * 1000;  // Tiempo de muestra de datos
+    final static long lTiempoRefrescoDatos = 30 * 1000;  // Tiempo de muestra de datos
 
     BluetoothDataList listaDatos;
 
@@ -260,7 +260,7 @@ public class Datos extends WearableActivity {
             timerGPS.schedule(timerTaskGPS, lTiempoGPS);*/
         }
 
-        /*handlerDatos = new Handler();
+        handlerDatos = new Handler();
         runOnUiThread(new Runnable(){
             @Override
             public void run(){
@@ -270,7 +270,7 @@ public class Datos extends WearableActivity {
                 handlerDatos.postDelayed(this, lTiempoRefrescoDatos);
 
             }
-        });*/
+        });
 
         setAmbientEnabled();
     }

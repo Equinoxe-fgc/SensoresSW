@@ -64,7 +64,7 @@ public class MainActivity extends WearableActivity {
                     iContador++;
                     if (btDeviceInfoList.getSize() != 0)
                         adaptador.notifyDataSetChanged();
-                    if (iContador == 4)
+                    if (iContador == 8)
                         btnScanOnClick(btnScan);
                 } else
                     iContador = 0;

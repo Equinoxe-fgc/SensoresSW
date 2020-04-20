@@ -52,7 +52,7 @@ public class ServiceDatos extends Service {
     final static long lTiempoGrabacionDatos = 120 * 1000;       // Tiempo de grabación de las estadísticas (en ms)
     final static long lTiempoComprobacionDesconexion = 5 * 1000;  // Tiempo cada cuanto se comprueba si ha habido desconexión
 
-    final static long lDelayComprobacionDesconexion = 30000;
+    final static long lDelayComprobacionDesconexion = 60000;
 
     final static int MAX_SENSOR_NUMBER = 8;
 
