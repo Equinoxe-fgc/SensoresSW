@@ -5,9 +5,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+
 import androidx.annotation.Nullable;
 
 import static java.lang.Thread.sleep;
@@ -110,6 +114,10 @@ public class checkServiceDatos extends Service {
                 int iDevice = bundle.getInt("Device");
 
                 if (iDevice == Datos.ERROR) {
+                    Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                    // Vibrate for 500 milliseconds
+                    v.vibrate(VibrationEffect.createOneShot(1000, VibrationEffect.DEFAULT_AMPLITUDE));
+
                     stopService(intentServicio);
                     try {
                         sleep(lDelayReconexion);

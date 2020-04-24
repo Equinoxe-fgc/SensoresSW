@@ -558,10 +558,13 @@ public class ServiceDatos extends Service {
                     // Se obtiene el primer sensor a activar
                     int iDevice = findGattIndex(gatt);
                     int firstSensor = findFirstSensor(iDevice);
-                    // Se actualiza para saber que ya se ha activado
-                    bSensores[iDevice][firstSensor] = false;
 
-                    habilitarServicio(gatt, firstSensor);
+                    if (firstSensor < 4) {
+                        // Se actualiza para saber que ya se ha activado
+                        bSensores[iDevice][firstSensor] = false;
+
+                        habilitarServicio(gatt, firstSensor);
+                    }
                 }
             }
 
