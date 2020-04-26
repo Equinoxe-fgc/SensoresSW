@@ -49,12 +49,9 @@ import static android.bluetooth.BluetoothGattCharacteristic.FORMAT_SINT8;
 
 
 public class ServiceDatos extends Service {
-    final static long lTiempoGrabacionDatos = 120 * 1000;       // Tiempo de grabación de las estadísticas (en ms)
     final static long lTiempoComprobacionDesconexion = 5 * 1000;  // Tiempo cada cuanto se comprueba si ha habido desconexión
 
     final static long lDelayComprobacionDesconexion = 60000;
-
-    final static int MAX_SENSOR_NUMBER = 8;
 
     final static int SENSOR_MOV_DATA_LEN = 19;
     final static int SENSOR_MOV_SEC_POS = SENSOR_MOV_DATA_LEN - 1;
@@ -113,7 +110,7 @@ public class ServiceDatos extends Service {
     DecimalFormat df;
 
     private boolean bAcelerometro, bGiroscopo, bMagnetometro;
-    private String[] sAddresses = new String[MAX_SENSOR_NUMBER];
+    private String[] sAddresses = new String[Datos.MAX_SENSOR_NUMBER];
     boolean bSendServer;
 
     private Looper mServiceLooper;
@@ -227,13 +224,13 @@ public class ServiceDatos extends Service {
         bConfigPeriodo = new boolean[iNumDevices][4];
 
         // Se inicializan todos los sensores porque se guarda la estadística de todos aunque no se usen
-        lDatosRecibidos = new long[MAX_SENSOR_NUMBER];
-        lDatosPerdidos = new long[MAX_SENSOR_NUMBER];
+        lDatosRecibidos = new long[Datos.MAX_SENSOR_NUMBER];
+        lDatosPerdidos = new long[Datos.MAX_SENSOR_NUMBER];
         iSecuencia = new byte[iNumDevices];
         bPrimerDato = new boolean[iNumDevices];
         lDatosRecibidosAnteriores = new long[iNumDevices];
 
-        for (int i = 0; i < MAX_SENSOR_NUMBER; i++) {
+        for (int i = 0; i < Datos.MAX_SENSOR_NUMBER; i++) {
             if (i < iNumDevices) {
                 bSensores[i][0] = bActivacion[i][0] = bConfigPeriodo[i][0] = bAcelerometro || bGiroscopo || bMagnetometro;
 
@@ -297,7 +294,7 @@ public class ServiceDatos extends Service {
 
                     int iPosInicio = sUltimaLinea.indexOf('(');
                     sLinea = sUltimaLinea.substring(iPosInicio + 1);
-                    for (int i = 0; i < MAX_SENSOR_NUMBER; i++) {
+                    for (int i = 0; i < Datos.MAX_SENSOR_NUMBER; i++) {
                         int iPosComa = sLinea.indexOf(',');
                         int iPosFin = sLinea.indexOf(')');
                         String sCadena1 = sLinea.substring(0, iPosComa);
@@ -331,7 +328,7 @@ public class ServiceDatos extends Service {
             };
 
             timerGrabarDatos = new Timer();
-            timerGrabarDatos.scheduleAtFixedRate(timerTaskGrabarDatos, lTiempoGrabacionDatos, lTiempoGrabacionDatos);
+            timerGrabarDatos.scheduleAtFixedRate(timerTaskGrabarDatos, Datos.lTiempoGrabacionDatos, Datos.lTiempoGrabacionDatos);
         }
 
         final TimerTask timerTaskComprobarDesconexion = new TimerTask() {
@@ -472,7 +469,7 @@ public class ServiceDatos extends Service {
             long lDatosRecibidosTotal = 0;
             long lDatosPerdidosTotal = 0;
             sCadena = "";
-            for (int i = 0; i < MAX_SENSOR_NUMBER; i++) {
+            for (int i = 0; i < Datos.MAX_SENSOR_NUMBER; i++) {
                 lDatosRecibidosTotal += lDatosRecibidos[i];
                 lDatosPerdidosTotal += lDatosPerdidos[i];
                 sCadena += "(" +  lDatosRecibidos[i] + "," + lDatosPerdidos[i] + ")";

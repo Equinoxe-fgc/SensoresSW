@@ -50,6 +50,9 @@ public class Datos extends WearableActivity {
     final static long lTiempoGrabacionCorriente = 10;           // Tiempo de grabación del log de corriente
     final static long lTiempoRefrescoDatos = 30 * 1000;  // Tiempo de muestra de datos
 
+    public final static long lTiempoGrabacionDatos = 120 * 1000;       // Tiempo de grabación de las estadísticas (en ms)
+    public final static int MAX_SENSOR_NUMBER = 8;
+
     BluetoothDataList listaDatos;
 
     private MiAdaptadorDatos adaptadorDatos;
@@ -295,6 +298,10 @@ public class Datos extends WearableActivity {
         if (bInternalDevice) {
             intentServicioDatosInternalSensor = new Intent(this, ServiceDatosInternalSensor.class);
 
+            intentServicioDatosInternalSensor.putExtra("Periodo", iPeriodo);
+            intentServicioDatosInternalSensor.putExtra("Location", bLocation);
+            intentServicioDatosInternalSensor.putExtra("SendServer", bSendServer);
+
             intentServicioDatosInternalSensor.putExtra(getString(R.string.Accelerometer), bAcelerometro);
             intentServicioDatosInternalSensor.putExtra(getString(R.string.Gyroscope), bGiroscopo);
             intentServicioDatosInternalSensor.putExtra(getString(R.string.Magnetometer), bMagnetometro);
@@ -302,8 +309,9 @@ public class Datos extends WearableActivity {
 
             intentServicioDatosInternalSensor.putExtra("LogData", bLogData);
             intentServicioDatosInternalSensor.putExtra("FileNameDataLog", sFileNameDataLog);
+            intentServicioDatosInternalSensor.putExtra("LogStats", bLogStats);
 
-            //intentServicioDatosInternalSensor.putExtra("NumDevices", iNumDevices);
+            intentServicioDatosInternalSensor.putExtra("NumDevices", iNumDevices);
 
             startService(intentServicioDatosInternalSensor);
         }

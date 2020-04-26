@@ -5,10 +5,12 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
@@ -16,18 +18,24 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ServiceDatosInternalSensor extends Service implements SensorEventListener {
     public static final String NOTIFICATION = "com.equinoxe.bluetoothle.android.service.receiver";
 
     private boolean bAcelerometro, bGiroscopo, bMagnetometro, bHeartRate;
+    private boolean bLocation, bSendServer;
+    private int iPeriodo;
 
     private SensorManager sensorManager;
     private Sensor sensorAcelerometro, sensorGiroscopo, sensorMagnetometro, sensorHeartRate;
@@ -38,10 +46,14 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
 
     DecimalFormat df;
 
-    boolean bLogData;
+    boolean bLogData, bLogStats;
+    Timer timerGrabarDatos;
     String sFileNameDataLog;
+    BatteryInfoBT batInfo;
+
     SimpleDateFormat sdf;
     FileOutputStream fOutDataLog;
+    FileOutputStream fOut;
 
     @Override
     public void onCreate() {
@@ -84,15 +96,20 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
 
         df = new DecimalFormat("###.##");
 
-        int iNumDevice = intent.getIntExtra("NumDevices", 1) - 1;
+        int iNumDevices = intent.getIntExtra("NumDevices", 1);
+
+        bLocation = intent.getBooleanExtra("Location", false);
+        bSendServer = intent.getBooleanExtra("SendServer", false);
 
         bAcelerometro = intent.getBooleanExtra(getString(R.string.Accelerometer), true);
         bGiroscopo = intent.getBooleanExtra(getString(R.string.Gyroscope), true);
         bMagnetometro = intent.getBooleanExtra(getString(R.string.Magnetometer), true);
         bHeartRate = intent.getBooleanExtra(getString(R.string.HeartRate), true);
+        iPeriodo = intent.getIntExtra("Periodo", 20);
 
         bLogData = intent.getBooleanExtra("LogData", false);
         sFileNameDataLog = intent.getStringExtra("FileNameDataLog");
+        bLogStats = intent.getBooleanExtra("LogStats", false);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (bAcelerometro) {
@@ -121,11 +138,87 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
             }
         }
 
+        // Si es el único dispositivo hay que grabar el log para saber lo que dura encendido
+        if (bLogStats && iNumDevices == 1) {
+            sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.UK);
+
+            batInfo = new BatteryInfoBT();
+
+            File file;
+            int iNumFichero = 0;
+            String sFichero;
+            do {
+                sFichero = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + iNumDevices + "_" + iPeriodo + "_" + iNumFichero + ".txt";
+                file = new File(sFichero);
+                iNumFichero++;
+            } while (file.exists());
+
+            try {
+                String currentDateandTime = sdf.format(new Date());
+
+                fOut = new FileOutputStream(sFichero, false);
+                String sCadena = Build.MODEL + " " + iNumDevices + " " + iPeriodo + " " + bLocation + " " + bSendServer + " " + currentDateandTime + "\n";
+                fOut.write(sCadena.getBytes());
+                fOut.flush();
+            } catch (Exception e) {
+                Toast.makeText(this, getResources().getString(R.string.ERROR_FICHERO), Toast.LENGTH_LONG).show();
+            }
+
+            final TimerTask timerTaskGrabarDatos = new TimerTask() {
+                public void run() {
+                    grabarMedidas();
+                }
+            };
+
+            timerGrabarDatos = new Timer();
+            timerGrabarDatos.scheduleAtFixedRate(timerTaskGrabarDatos, Datos.lTiempoGrabacionDatos, Datos.lTiempoGrabacionDatos);
+        }
+
         Message msg = mServiceHandler.obtainMessage();
         msg.arg1 = startId;
         mServiceHandler.sendMessage(msg);
 
         return START_NOT_STICKY;
+    }
+
+    private void getBatteryInfo() {
+        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        Intent batteryStatus = registerReceiver(null, ifilter);
+        try {
+            batInfo.setBatteryLevel(batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1));
+            batInfo.setVoltaje(batteryStatus.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1));
+            batInfo.setTemperature(batteryStatus.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1));
+
+            BatteryManager mBatteryManager = (BatteryManager) this.getSystemService(Context.BATTERY_SERVICE);
+            batInfo.setCurrentAverage(mBatteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE));
+            batInfo.setCurrentNow(mBatteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW));
+        } catch (NullPointerException e) {
+            Log.e("NullPointerException", "ServiceDatos - getBatteryInfo");
+        }
+    }
+
+    public void grabarMedidas() {
+        getBatteryInfo();
+
+        try {
+            String sCadena = sdf.format(new Date()) + ":" +
+                    batInfo.getBatteryLevel() + ":";
+            //batInfo.getVoltaje() + ":" +
+            //batInfo.getTemperature() + ":" +
+            //batInfo.getCurrentAverage() + ":" +
+            //batInfo.getCurrentNow() + " - ";
+            fOut.write(sCadena.getBytes());
+
+            sCadena = "";
+            for (int i = 0; i < Datos.MAX_SENSOR_NUMBER; i++) {
+                sCadena += "(0,0)";
+            }
+            sCadena += "(0,0)\n";
+            fOut.write(sCadena.getBytes());
+            fOut.flush();
+        } catch (Exception e) {
+            Log.e("Fichero de resultados", e.getMessage(), e);
+        }
     }
 
     @Override
@@ -207,6 +300,13 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
     public void onDestroy() {
         super.onDestroy();
 
+        if (bLogStats) {
+            try {
+                timerGrabarDatos.cancel();
+                grabarMedidas();
+                fOut.close();
+            } catch (Exception e) {}
+        }
         /*if (bLogData) {
             try {
                 fOutDataLog.close();

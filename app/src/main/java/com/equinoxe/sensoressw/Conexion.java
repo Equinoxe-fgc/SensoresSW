@@ -249,10 +249,11 @@ public class Conexion extends WearableActivity {
         //intent.putExtra("SendServer", chkSendServer.isChecked());
         intent.putExtra("SendServer", false);
 
+        //intent.putExtra("InternalSensor", bInternalDevice);
 
-        if (!chkLogCurrent.isChecked())        intent.putExtra("InternalSensor", bInternalDevice);
+        if (!chkLogCurrent.isChecked())
+            txtTiempo.setText("0");
 
-        txtTiempo.setText("0");
         long lTime = 1000*Integer.parseInt(txtTiempo.getText().toString());
         intent.putExtra("Time", lTime);
 
