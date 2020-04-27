@@ -57,8 +57,9 @@ public class Datos extends WearableActivity {
 
     private MiAdaptadorDatos adaptadorDatos;
     private TextView txtLongitud;
-    private  TextView txtLatitud;
+    private TextView txtLatitud;
     private TextView txtMensajes;
+    private TextView txtBateria;
 
     Handler handlerDatos;
     boolean bSensing;
@@ -147,6 +148,7 @@ public class Datos extends WearableActivity {
         txtLatitud = findViewById(R.id.textViewLatitud);
         txtLongitud = findViewById(R.id.textViewLongitud);
         txtMensajes = findViewById(R.id.textViewMensajes);
+        txtBateria = findViewById(R.id.textViewBateria);
 
         listaDatos = new BluetoothDataList(iNumDevices, sAddresses);
 
@@ -268,6 +270,11 @@ public class Datos extends WearableActivity {
             @Override
             public void run(){
                 if (bSensing) {
+                    IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+                    Intent batteryStatus = registerReceiver(null, ifilter);
+                    String sBateria = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) + " %";
+                    txtBateria.setText(sBateria);
+
                     adaptadorDatos.notifyDataSetChanged();
                 }
                 handlerDatos.postDelayed(this, lTiempoRefrescoDatos);

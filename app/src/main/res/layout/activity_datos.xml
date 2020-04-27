@@ -14,6 +14,12 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/textViewBateria"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="center" />
+
+            <TextView
                 android:id="@+id/textViewLatitud"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
