@@ -157,7 +157,9 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
                 String currentDateandTime = sdf.format(new Date());
 
                 fOut = new FileOutputStream(sFichero, false);
-                String sCadena = Build.MODEL + " " + iNumDevices + " " + iPeriodo + " " + bLocation + " " + bSendServer + " " + currentDateandTime + "\n";
+                String sModel = Build.MODEL;
+                sModel.replace(" ", "_");
+                String sCadena = sModel + " " + iNumDevices + " " + iPeriodo + " " + bLocation + " " + bSendServer + " " + currentDateandTime + "\n";
                 fOut.write(sCadena.getBytes());
                 fOut.flush();
             } catch (Exception e) {
