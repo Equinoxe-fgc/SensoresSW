@@ -55,6 +55,8 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
     FileOutputStream fOutDataLog;
     FileOutputStream fOut;
 
+    long lNumMsgGiroscopo, lNumMsgMagnetometro, lNumMsgAcelerometro, lNumMsgHR;
+
     @Override
     public void onCreate() {
         HandlerThread thread = new HandlerThread("ServiceDatosInternalSensor", HandlerThread.MIN_PRIORITY);
@@ -93,6 +95,10 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         createNotificationChannel();
+        lNumMsgGiroscopo = 0;
+        lNumMsgMagnetometro = 0;
+        lNumMsgAcelerometro = 0;
+        lNumMsgHR = 0;
 
         df = new DecimalFormat("###.##");
 
@@ -231,6 +237,7 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
 
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
+                lNumMsgAcelerometro++;
                 sCadenaAcelerometro = "A: " + df.format(event.values[0]) + " "
                                               + df.format(event.values[1]) + " "
                                               + df.format(event.values[2]);
@@ -238,6 +245,7 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
                 msg.arg1 = Datos.ACELEROMETRO;
                 break;
             case Sensor.TYPE_GYROSCOPE:
+                lNumMsgGiroscopo++;
                 sCadenaGiroscopo = "G: " + df.format(event.values[0]) + " "
                                            + df.format(event.values[1]) + " "
                                            + df.format(event.values[2]);
@@ -245,6 +253,7 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
                 msg.arg1 = Datos.GIROSCOPO;
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
+                lNumMsgMagnetometro++;
                 sCadenaMagnetometro = "M: " + df.format(event.values[0]) + " "
                                               + df.format(event.values[1]) + " "
                                               + df.format(event.values[2]);
@@ -252,7 +261,8 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
                 msg.arg1 = Datos.MAGNETOMETRO;
                 break;
             case Sensor.TYPE_HEART_RATE:
-                sCadenaHeartRate = "HR: " + df.format(event.values[0]);
+                ;long lNumMsg = lNumMsgGiroscopo + lNumMsgMagnetometro + lNumMsgAcelerometro + lNumMsgHR;
+                sCadenaHeartRate = "HR: " + df.format(event.values[0]) + " - " + lNumMsgHR;
                 sCadenaFichero = sCadenaHeartRate;
                 msg.arg1 = Datos.HEART_RATE;
                 break;

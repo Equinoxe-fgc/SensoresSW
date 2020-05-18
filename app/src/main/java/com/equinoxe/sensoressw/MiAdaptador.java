@@ -43,7 +43,7 @@ public class MiAdaptador extends RecyclerView.Adapter<MiAdaptador.ViewHolder> {
 
         holder.chkSelected.setChecked(info.isSelected());
         holder.txtDescription.setText(info.getDescription());
-        holder.txtDescription2.setText(info.getAddress());
+        holder.txtDescription2.setText(info.getShortAddress());
 
         holder.btnConectOne.setOnClickListener(new View.OnClickListener() {
             @Override

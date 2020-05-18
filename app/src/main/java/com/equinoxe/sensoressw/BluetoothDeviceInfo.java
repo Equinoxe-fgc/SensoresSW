@@ -24,6 +24,8 @@ public class BluetoothDeviceInfo {
         return sAddress;
     }
 
+    public String getShortAddress() {return sAddress.substring(3);}
+
     public void setSelected(boolean bSelected) {
         this.bSelected = bSelected;
     }
