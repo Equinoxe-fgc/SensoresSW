@@ -50,33 +50,6 @@ public class checkServiceDatos extends Service {
         thread.start();
     }
 
-    private void crearServicio() {
-            // Aquí solo se accede si hay dispositivos externos (puede haber internos)
-            intentServicio = new Intent(this, ServiceDatos.class);
-
-            intentServicio.putExtra("Periodo", iPeriodo);
-            intentServicio.putExtra("NumDevices", iNumDevices);
-            intentServicio.putExtra("Refresco", lTiempoRefrescoDatos);
-            for (int i = 0; i < iNumDevices; i++)
-                intentServicio.putExtra("Address" + i, sAddresses[i]);
-
-            intentServicio.putExtra("Acelerometro", bAcelerometro);
-            intentServicio.putExtra("Giroscopo", bGiroscopo);
-            intentServicio.putExtra("Magnetometro", bMagnetometro);
-            intentServicio.putExtra("Location", bLocation);
-            intentServicio.putExtra("SendServer", bSendServer);
-            intentServicio.putExtra("InternalDevice", bInternalDevice);
-
-            intentServicio.putExtra("LogStats", bLogStats);
-            intentServicio.putExtra("LogData", bLogData);
-            intentServicio.putExtra("FileNameDataLog", sFileNameDataLog);
-
-            intentServicio.putExtra("Reinicio", false);
-
-            startService(intentServicio);
-    }
-
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         iNumDevices = intent.getIntExtra("NumDevices",1);
@@ -100,9 +73,35 @@ public class checkServiceDatos extends Service {
 
         crearServicio();
 
-        registerReceiver(receiver, new IntentFilter(ServiceDatos.NOTIFICATION));
+        registerReceiver(receiver, new IntentFilter(Datos.NOTIFICATION));
 
         return START_NOT_STICKY;
+    }
+
+    private void crearServicio() {
+        // Aquí solo se accede si hay dispositivos externos (puede haber internos)
+        intentServicio = new Intent(this, ServiceDatos.class);
+
+        intentServicio.putExtra("Periodo", iPeriodo);
+        intentServicio.putExtra("NumDevices", iNumDevices);
+        intentServicio.putExtra("Refresco", lTiempoRefrescoDatos);
+        for (int i = 0; i < iNumDevices; i++)
+            intentServicio.putExtra("Address" + i, sAddresses[i]);
+
+        intentServicio.putExtra("Acelerometro", bAcelerometro);
+        intentServicio.putExtra("Giroscopo", bGiroscopo);
+        intentServicio.putExtra("Magnetometro", bMagnetometro);
+        intentServicio.putExtra("Location", bLocation);
+        intentServicio.putExtra("SendServer", bSendServer);
+        intentServicio.putExtra("InternalDevice", bInternalDevice);
+
+        intentServicio.putExtra("LogStats", bLogStats);
+        intentServicio.putExtra("LogData", bLogData);
+        intentServicio.putExtra("FileNameDataLog", sFileNameDataLog);
+
+        intentServicio.putExtra("Reinicio", false);
+
+        startService(intentServicio);
     }
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {

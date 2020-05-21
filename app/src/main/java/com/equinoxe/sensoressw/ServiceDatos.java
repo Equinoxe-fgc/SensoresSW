@@ -56,8 +56,6 @@ public class ServiceDatos extends Service {
     final static int SENSOR_MOV_DATA_LEN = 19;
     final static int SENSOR_MOV_SEC_POS = SENSOR_MOV_DATA_LEN - 1;
 
-    public static final String NOTIFICATION = "com.equinoxe.bluetoothle.android.service.receiver";
-
     public static final int CHANNEL_ID = 128;
 
     String[] sCadenaGiroscopo;
@@ -951,7 +949,7 @@ public class ServiceDatos extends Service {
     }
 
     private void publishSensorValues(int iSensor, int iDevice, String sCadena) {
-        Intent intent = new Intent(NOTIFICATION);
+        Intent intent = new Intent(Datos.NOTIFICATION);
         intent.putExtra("Sensor", iSensor);
         intent.putExtra("Device", iDevice);
         intent.putExtra("Cadena", sCadena);

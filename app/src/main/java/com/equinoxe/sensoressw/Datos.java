@@ -36,6 +36,8 @@ import com.google.android.gms.location.LocationServices;
 
 
 public class Datos extends WearableActivity {
+    public static final String NOTIFICATION = "com.equinoxe.sensoressw.NOTIFICACION";
+
     final static int GIROSCOPO    = 0;
     final static int ACELEROMETRO = 1;
     final static int MAGNETOMETRO = 2;
@@ -113,7 +115,7 @@ public class Datos extends WearableActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_datos);
 
-        registerReceiver(receiver, new IntentFilter(ServiceDatos.NOTIFICATION));
+        registerReceiver(receiver, new IntentFilter(Datos.NOTIFICATION));
 
         RecyclerView recyclerViewDatos;
         RecyclerView.LayoutManager layoutManager;
@@ -215,9 +217,6 @@ public class Datos extends WearableActivity {
             timerTiempo.schedule(timerTaskTiempo, lTime);
         }
 
-
-        crearServicio();
-
         if (bLocation) {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -280,6 +279,7 @@ public class Datos extends WearableActivity {
             }
         });
 
+        crearServicio();
         setAmbientEnabled();
     }
 
@@ -300,27 +300,6 @@ public class Datos extends WearableActivity {
     }
 
     private void crearServicio() {
-        if (bInternalDevice) {
-            intentServicioDatosInternalSensor = new Intent(this, ServiceDatosInternalSensor.class);
-
-            intentServicioDatosInternalSensor.putExtra("Periodo", iPeriodo);
-            intentServicioDatosInternalSensor.putExtra("Location", bLocation);
-            intentServicioDatosInternalSensor.putExtra("SendServer", bSendServer);
-
-            intentServicioDatosInternalSensor.putExtra(getString(R.string.Accelerometer), bAcelerometro);
-            intentServicioDatosInternalSensor.putExtra(getString(R.string.Gyroscope), bGiroscopo);
-            intentServicioDatosInternalSensor.putExtra(getString(R.string.Magnetometer), bMagnetometro);
-            intentServicioDatosInternalSensor.putExtra(getString(R.string.HeartRate), bHeartRate);
-
-            intentServicioDatosInternalSensor.putExtra("LogData", bLogData);
-            intentServicioDatosInternalSensor.putExtra("FileNameDataLog", sFileNameDataLog);
-            intentServicioDatosInternalSensor.putExtra("LogStats", bLogStats);
-
-            intentServicioDatosInternalSensor.putExtra("NumDevices", iNumDevices);
-
-            startService(intentServicioDatosInternalSensor);
-        }
-
         // Si no se selecciona dispositivo interno o se selecciona el interno y hay más de un dispositivo seleccionado
         if (!bInternalDevice || (bInternalDevice && iNumDevices > 1)) {
             intentChkServicio = new Intent(this, checkServiceDatos.class);
@@ -346,6 +325,27 @@ public class Datos extends WearableActivity {
             intentChkServicio.putExtra("FileNameDataLog", sFileNameDataLog);
 
             startService(intentChkServicio);
+        }
+
+        if (bInternalDevice) {
+            intentServicioDatosInternalSensor = new Intent(this, ServiceDatosInternalSensor.class);
+
+            intentServicioDatosInternalSensor.putExtra("Periodo", iPeriodo);
+            intentServicioDatosInternalSensor.putExtra("Location", bLocation);
+            intentServicioDatosInternalSensor.putExtra("SendServer", bSendServer);
+
+            intentServicioDatosInternalSensor.putExtra(getString(R.string.Accelerometer), bAcelerometro);
+            intentServicioDatosInternalSensor.putExtra(getString(R.string.Gyroscope), bGiroscopo);
+            intentServicioDatosInternalSensor.putExtra(getString(R.string.Magnetometer), bMagnetometro);
+            intentServicioDatosInternalSensor.putExtra(getString(R.string.HeartRate), bHeartRate);
+
+            intentServicioDatosInternalSensor.putExtra("LogData", bLogData);
+            intentServicioDatosInternalSensor.putExtra("FileNameDataLog", sFileNameDataLog);
+            intentServicioDatosInternalSensor.putExtra("LogStats", bLogStats);
+
+            intentServicioDatosInternalSensor.putExtra("NumDevices", iNumDevices);
+
+            startService(intentServicioDatosInternalSensor);
         }
     }
 

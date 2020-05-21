@@ -31,8 +31,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class ServiceDatosInternalSensor extends Service implements SensorEventListener {
-    public static final String NOTIFICATION = "com.equinoxe.bluetoothle.android.service.receiver";
-
     private boolean bAcelerometro, bGiroscopo, bMagnetometro, bHeartRate;
     private boolean bLocation, bSendServer;
     private int iPeriodo;
@@ -94,7 +92,7 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        createNotificationChannel();
+        //createNotificationChannel();
         lNumMsgGiroscopo = 0;
         lNumMsgMagnetometro = 0;
         lNumMsgAcelerometro = 0;
@@ -302,7 +300,7 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
     }
 
     private void publishSensorValues(int iSensor, int iDevice, String sCadena) {
-        Intent intent = new Intent(NOTIFICATION);
+        Intent intent = new Intent(Datos.NOTIFICATION);
         intent.putExtra("Sensor", iSensor);
         intent.putExtra("Device", iDevice);
         intent.putExtra("Cadena", sCadena);
