@@ -33,7 +33,6 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 
 public class Datos extends WearableActivity {
@@ -114,7 +113,7 @@ public class Datos extends WearableActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_datos);
 
-        setAmbientEnabled();
+        registerReceiver(receiver, new IntentFilter(ServiceDatos.NOTIFICATION));
 
         RecyclerView recyclerViewDatos;
         RecyclerView.LayoutManager layoutManager;
@@ -216,9 +215,8 @@ public class Datos extends WearableActivity {
             timerTiempo.schedule(timerTaskTiempo, lTime);
         }
 
-        crearServicio();
 
-        registerReceiver(receiver, new IntentFilter(ServiceDatos.NOTIFICATION));
+        crearServicio();
 
         if (bLocation) {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -444,4 +442,8 @@ public class Datos extends WearableActivity {
         finish();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 }

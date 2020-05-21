@@ -261,7 +261,8 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
                 msg.arg1 = Datos.MAGNETOMETRO;
                 break;
             case Sensor.TYPE_HEART_RATE:
-                ;long lNumMsg = lNumMsgGiroscopo + lNumMsgMagnetometro + lNumMsgAcelerometro + lNumMsgHR;
+                long lNumMsg = lNumMsgGiroscopo + lNumMsgMagnetometro + lNumMsgAcelerometro + lNumMsgHR;
+                lNumMsgHR++;
                 sCadenaHeartRate = "HR: " + df.format(event.values[0]) + " - " + lNumMsgHR;
                 sCadenaFichero = sCadenaHeartRate;
                 msg.arg1 = Datos.HEART_RATE;
