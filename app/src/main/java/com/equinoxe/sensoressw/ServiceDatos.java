@@ -19,6 +19,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
@@ -120,6 +121,7 @@ public class ServiceDatos extends Service {
     int []iPosInicioSendServer;
     int iNumSentServer;
     boolean bSendDatosServer;
+    WifiManager.WifiLock wifiLock;
     //int []iPosBufferAux;
     //byte [][]dataToSend;
 
@@ -418,7 +420,7 @@ public class ServiceDatos extends Service {
                     return;
 
                 for (int iDevice = 0; iDevice < iNumDevices; iDevice++) {
-                    envioAsync.setData((byte) iDevice, bufferDatos[iDevice][iPosInicioSendServer[iDevice] + iNumSentServer]);
+                    envioAsync.setData((byte) iDevice, bufferDatos[iDevice][(iPosInicioSendServer[iDevice] + iNumSentServer) % iNumMuestrasBuffer]);
                     iNumSentServer++;
                 }
                 if (iNumSentServer == iNumMuestrasBuffer / 3) {
@@ -495,6 +497,8 @@ public class ServiceDatos extends Service {
             }
 
             if (bNetConnected) {
+                setWifiLock();
+
                 SharedPreferences pref = getApplicationContext().getSharedPreferences("Settings", MODE_PRIVATE);
                 sServer = pref.getString("server", "127.0.0.1");
                 iPuerto = pref.getInt("puerto", 8000);
@@ -509,6 +513,16 @@ public class ServiceDatos extends Service {
                     envioAsync = new EnvioDatosSocket(sServer, iPuerto, iNumMuestrasBuffer/2,SENSOR_MOV_DATA_LEN + 1);*/
                 envioAsync.start();
             }
+        }
+    }
+
+    public void setWifiLock() {
+        wifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "myWifiLock");
+        if (wifiLock.isHeld()){
+            wifiLock.release();
+        }
+        else {
+            wifiLock.acquire();
         }
     }
 
@@ -601,8 +615,12 @@ public class ServiceDatos extends Service {
                 fOut.close();
                 fLog.close();
             }
-            if (bSendServer)
+            if (bSendServer) {
+                timerEmpezarSendDatosBuffer.cancel();
+                timerSendDatosBuffer.cancel();
+                wifiLock.release();
                 envioAsync.finalize();
+            }
         } catch (Exception e) {
             Log.e("Error - ", "Error cerrando fichero");
         } catch (Throwable throwable) {
