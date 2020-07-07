@@ -120,7 +120,6 @@ public class checkServiceDatos extends Service {
 
                 if (iDevice == Datos.ERROR) {
                     Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                    // Vibrate for 500 milliseconds
                     v.vibrate(VibrationEffect.createOneShot(1000, VibrationEffect.DEFAULT_AMPLITUDE));
 
                     stopService(intentServicio);

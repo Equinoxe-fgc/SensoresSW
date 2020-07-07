@@ -28,6 +28,8 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManager;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -300,14 +302,20 @@ public class ServiceDatos extends Service {
                 int iNumFichero = 0;
                 String sFichero;
                 do {
-                    sFichero = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + iNumDevices + "_" + iPeriodo + "_" + iNumFichero + ".txt";
+                    if (bSendServer)
+                        sFichero = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + iNumDevices + "_" + iPeriodo + "_" + iTimeSendServer + "_" + iDatosSendServer + "_" + iNumFichero + ".txt";
+                    else
+                        sFichero = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + iNumDevices + "_" + iPeriodo + "_" + iNumFichero + ".txt";
                     file = new File(sFichero);
                     iNumFichero++;
                 } while (file.exists());
 
                 if (bReinicio) {
                     iNumFichero -= 2;
-                    sFichero = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + iNumDevices + "_" + iPeriodo + "_" + iNumFichero + ".txt";
+                    if (bSendServer)
+                        sFichero = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + iNumDevices + "_" + iPeriodo + "_" + iTimeSendServer + "_" + iDatosSendServer + "_" + iNumFichero + ".txt";
+                    else
+                        sFichero = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + iNumDevices + "_" + iPeriodo + "_" + iNumFichero + ".txt";
                     FileInputStream fIn = new FileInputStream(sFichero);
                     InputStreamReader sReader = new InputStreamReader(fIn);
                     BufferedReader buffreader = new BufferedReader(sReader);
@@ -385,18 +393,14 @@ public class ServiceDatos extends Service {
         final TimerTask timerTaskEmpezarSendDatosBuffer = new TimerTask() {
             @Override
             public void run() {
-                /*for (int iDevice = 0; iDevice < iNumDevices; iDevice++)
-                    iPosBufferAux[iDevice] = iPosBuffer[iDevice];
+                if (!envioAsync.getConnectionState()) {
+                    Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                    v.vibrate(VibrationEffect.createOneShot(1000, VibrationEffect.DEFAULT_AMPLITUDE));
 
-                for (int iDevice = 0; iDevice < iNumDevices; iDevice++) {
-                    for (int i = 0; i < iNumMuestrasBuffer / 2; i++) {
-                        int iPos = (iPosBufferAux[iDevice] + i) % iNumMuestrasBuffer;
-                        //System.out.println(iPos);
-                        //byte prueba[] = bufferDatos[iDevice][iPos];
-                        System.arraycopy(bufferDatos[iDevice][iPos], 0, dataToSend[i], 1, SENSOR_MOV_DATA_LEN);
-                    }
-                    envioAsync.setDataBuffer((byte) iDevice, dataToSend);
-                }*/
+                    enviarMensaje(sdf.format(new Date()) + " " + getString(R.string.ERROR_CONNECTION_LOST) + "\n");
+                    return;
+                }
+
                 for (int iDevice = 0; iDevice < iNumDevices; iDevice++) {
                     iPosInicioSendServer[iDevice] = iPosBuffer[iDevice] - iNumMuestrasBuffer / 3;
                     if (iPosInicioSendServer[iDevice] < 0)
@@ -740,7 +744,7 @@ public class ServiceDatos extends Service {
 
                             // Si el tiempo entre envíos es 0 se envía continuamente
                             //if (iTimeSendServer == 0)
-                                envioAsync = new EnvioDatosSocket(sServer, iPuerto, SENSOR_MOV_DATA_LEN + 1);
+                            envioAsync = new EnvioDatosSocket(sServer, iPuerto, SENSOR_MOV_DATA_LEN + 1);
                             /*else    // En otro caso se envía por lotes la mitad del buffer (porque tiene el doble de la capacidad necesaria)
                                 envioAsync = new EnvioDatosSocket(sServer, iPuerto, iNumMuestrasBuffer/2, SENSOR_MOV_DATA_LEN + 1);*/
 

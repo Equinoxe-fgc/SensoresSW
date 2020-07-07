@@ -55,4 +55,5 @@
     <string name="Incorrect_IP">Incorrect IP</string>
     <string name="Incorrect_Port">Incorrect port</string>
     <string name="Settings">Settings</string>
+    <string name="ERROR_CONNECTION_LOST">Server connection lost</string>
 </resources>
