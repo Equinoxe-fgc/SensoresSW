@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -27,12 +28,39 @@
             android:layout_height="wrap_content"
             android:text="@string/gps" />
 
-        <!--<CheckBox
-            android:id="@+id/chkEnvioServidor"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/EnvioAservidor"
-            tools:visibility="gone" />-->
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/chkEnvioServidor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/EnvioAservidor" />
+
+            <EditText
+                android:id="@+id/txtSendServer"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:enabled="false"
+                android:inputType="number"
+                android:text="1"
+                android:textAlignment="center" />
+
+            <EditText
+                android:id="@+id/txtSendDatos"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:enabled="false"
+                android:inputType="number"
+                android:text="2500"
+                android:textAlignment="center" />
+        </LinearLayout>
 
         <CheckBox
             android:id="@+id/chkLogStats"

@@ -29,12 +29,26 @@
             android:text="@string/Internal"
             android:visibility="gone" />
 
-        <Button
-        android:id="@+id/btnScan"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="btnScanOnClick"
-        android:text="@string/scan" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnScan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="btnScanOnClick"
+                android:text="@string/scan" />
+
+            <Button
+                android:id="@+id/btnSettings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="btnSettingsClick"
+                android:text="@string/Settings" />
+        </LinearLayout>
 
         <ScrollView
             android:layout_width="match_parent"

@@ -27,6 +27,8 @@ public class checkServiceDatos extends Service {
 
     boolean bLocation;
     boolean bSendServer;
+    int iTimeSendServer;
+    int iDatosSendServer;
 
     boolean bLogStats;
     boolean bLogData;
@@ -69,6 +71,8 @@ public class checkServiceDatos extends Service {
 
         bLocation = intent.getBooleanExtra("Location", false);
         bSendServer = intent.getBooleanExtra("SendServer", false);
+        iTimeSendServer = intent.getIntExtra("timeSendServer",1);
+        iDatosSendServer = intent.getIntExtra("datosSendServer", 3500);
         bInternalDevice = intent.getBooleanExtra("InternalDevice", false);
 
         crearServicio();
@@ -93,6 +97,8 @@ public class checkServiceDatos extends Service {
         intentServicio.putExtra("Magnetometro", bMagnetometro);
         intentServicio.putExtra("Location", bLocation);
         intentServicio.putExtra("SendServer", bSendServer);
+        intentServicio.putExtra("timeSendServer", iTimeSendServer);
+        intentServicio.putExtra("datosSendServer", iDatosSendServer);
         intentServicio.putExtra("InternalDevice", bInternalDevice);
 
         intentServicio.putExtra("LogStats", bLogStats);

@@ -3,10 +3,9 @@ package com.equinoxe.sensoressw;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.Settings;
+//import android.provider.Settings;
 import android.support.wearable.activity.WearableActivity;
 import android.view.View;
 import android.widget.Button;
@@ -114,6 +113,11 @@ public class MainActivity extends WearableActivity {
         }
 
         bScanning = !bScanning;
+    }
+
+    public void btnSettingsClick(View v) {
+        Intent intent = new Intent(this, Settings.class);
+        startActivity(intent);
     }
 
     private void checkForPermissions() {

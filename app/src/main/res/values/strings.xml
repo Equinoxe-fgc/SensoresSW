@@ -4,7 +4,7 @@
     This string is used for square devices and overridden by hello_world in
     values-round/strings.xml for round devices.
     -->
-    <string name="CompileDate">21/05/2020</string>
+    <string name="CompileDate">07/07/2020</string>
     <string name="scan">Scan</string>
     <string name="stop">Stop</string>
     <string name="connect">Connect selected</string>
@@ -23,7 +23,7 @@
 
     <string name="start">Start</string>
     <string name="gps">Positioning</string>
-    <string name="EnvioAservidor">Send data to server</string>
+    <string name="EnvioAservidor">Send to server</string>
     <string name="log_consumo_corriente">Log current</string>
     <string name="Period">Period</string>
 
@@ -41,4 +41,18 @@
     <string name="Internal_Address">00:00:00:00:00:00</string>
     <string name="LogStats">Log stats</string>
     <string name="LogData">Log data</string>
+    <string name="ERROR_REQUEST_POSITION">Error requesting position</string>
+    <string name="title_activity_settings">Settings</string>
+    <!--
+    This string is used for square devices and overridden by hello_world in
+    values-round/strings.xml for round devices.
+    -->
+    <string name="hello_world">Hello Square World!</string>
+    <string name="ServerIP">Server IP</string>
+    <string name="ServerPort">Port</string>
+    <string name="Save">Save</string>
+    <string name="Options_saved">Options saved</string>
+    <string name="Incorrect_IP">Incorrect IP</string>
+    <string name="Incorrect_Port">Incorrect port</string>
+    <string name="Settings">Settings</string>
 </resources>

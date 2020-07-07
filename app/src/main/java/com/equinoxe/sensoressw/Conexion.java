@@ -38,7 +38,9 @@ public class Conexion extends WearableActivity {
     private TextView txtPeriodo;
     private Button btnStart;
     private CheckBox chkGPS;
-    //private CheckBox chkSendServer;
+    private CheckBox chkSendServer;
+    private TextView txtSendServer;
+    private TextView txtSendDatos;
     private CheckBox chkLogCurrent;
     private CheckBox chkLogStats, chkLogData;
     private TextView txtTiempo;
@@ -56,7 +58,9 @@ public class Conexion extends WearableActivity {
         txtPeriodo = findViewById(R.id.txtPeriodo);
         btnStart = findViewById(R.id.btnStart);
         chkGPS = findViewById(R.id.chkGPS);
-        //chkSendServer = findViewById(R.id.chkEnvioServidor);
+        chkSendServer = findViewById(R.id.chkEnvioServidor);
+        txtSendServer = findViewById(R.id.txtSendServer);
+        txtSendDatos = findViewById(R.id.txtSendDatos);
 
         chkLogStats = findViewById(R.id.chkLogStats);
         chkLogData = findViewById(R.id.chkLogData);
@@ -96,11 +100,15 @@ public class Conexion extends WearableActivity {
         chkLogCurrent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (((CompoundButton) view).isChecked()) {
-                    txtTiempo.setEnabled(true);
-                } else {
-                    txtTiempo.setEnabled(false);
-                }
+                txtTiempo.setEnabled(((CompoundButton) view).isChecked());
+            }
+        });
+
+        chkSendServer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                txtSendServer.setEnabled(((CompoundButton) view).isChecked());
+                txtSendDatos.setEnabled(((CompoundButton) view).isChecked());
             }
         });
     }
@@ -246,8 +254,10 @@ public class Conexion extends WearableActivity {
         intent.putExtra("LOGCurrent", chkLogCurrent.isChecked());
 
         intent.putExtra("Location", chkGPS.isChecked());
-        //intent.putExtra("SendServer", chkSendServer.isChecked());
-        intent.putExtra("SendServer", false);
+        intent.putExtra("SendServer", chkSendServer.isChecked());
+        intent.putExtra("timeSendServer", Integer.parseInt(txtSendServer.getText().toString()));
+        intent.putExtra("datosSendServer", Integer.parseInt(txtSendDatos.getText().toString()));
+        //intent.putExtra("SendServer", false);
 
         //intent.putExtra("InternalSensor", bInternalDevice);
 

@@ -75,6 +75,8 @@ public class Datos extends WearableActivity {
 
     boolean bLocation;
     boolean bSendServer;
+    int iTimeSendServer;
+    int iDatosSendServer;
 
     long lTime;
 
@@ -137,6 +139,8 @@ public class Datos extends WearableActivity {
 
         bLocation = extras.getBoolean("Location");
         bSendServer = extras.getBoolean("SendServer");
+        iTimeSendServer = extras.getInt("timeSendServer");
+        iDatosSendServer = extras.getInt("datosSendServer");
 
         bInternalDevice = extras.getBoolean("InternalDevice");
 
@@ -237,7 +241,11 @@ public class Datos extends WearableActivity {
                     }
                 }
             };
-            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback,null /* Looper */);
+            try {
+                fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null /* Looper */);
+            } catch (SecurityException e) {
+                Toast.makeText(this, getString(R.string.ERROR_REQUEST_POSITION), Toast.LENGTH_LONG).show();
+            }
 
             /*fusedLocationClient.getLastLocation()
                     .addOnSuccessListener(this, new OnSuccessListener<Location>() {
@@ -319,6 +327,8 @@ public class Datos extends WearableActivity {
             intentChkServicio.putExtra("Magnetometro", bMagnetometro);
             intentChkServicio.putExtra("Location", bLocation);
             intentChkServicio.putExtra("SendServer", bSendServer);
+            intentChkServicio.putExtra("timeSendServer", iTimeSendServer);
+            intentChkServicio.putExtra("datosSendServer", iDatosSendServer);
             intentChkServicio.putExtra("LogData", bLogData);
             intentChkServicio.putExtra("LogStats", bLogStats);
 
@@ -333,6 +343,8 @@ public class Datos extends WearableActivity {
             intentServicioDatosInternalSensor.putExtra("Periodo", iPeriodo);
             intentServicioDatosInternalSensor.putExtra("Location", bLocation);
             intentServicioDatosInternalSensor.putExtra("SendServer", bSendServer);
+            intentServicioDatosInternalSensor.putExtra("datosSendServer", iDatosSendServer);
+            intentServicioDatosInternalSensor.putExtra("timeSendServer", iTimeSendServer);
 
             intentServicioDatosInternalSensor.putExtra(getString(R.string.Accelerometer), bAcelerometro);
             intentServicioDatosInternalSensor.putExtra(getString(R.string.Gyroscope), bGiroscopo);
@@ -444,6 +456,7 @@ public class Datos extends WearableActivity {
 
     @Override
     protected void onDestroy() {
+        //btnPararClick(null);
         super.onDestroy();
     }
 }

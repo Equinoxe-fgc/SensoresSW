@@ -56,7 +56,7 @@ public class ServiceDatos extends Service {
     final static int SENSOR_MOV_DATA_LEN = 19;
     final static int SENSOR_MOV_SEC_POS = SENSOR_MOV_DATA_LEN - 1;
 
-    public static final int CHANNEL_ID = 128;
+    //public static final int CHANNEL_ID = 128;
 
     String[] sCadenaGiroscopo;
     String[] sCadenaMagnetometro;
@@ -110,12 +110,24 @@ public class ServiceDatos extends Service {
     private boolean bAcelerometro, bGiroscopo, bMagnetometro;
     private String[] sAddresses = new String[Datos.MAX_SENSOR_NUMBER];
     boolean bSendServer;
+    int iTimeSendServer;
+    int iDatosSendServer;
+    byte [][][]bufferDatos;
+    int iNumMuestrasBuffer;
+    int []iPosBuffer;
+    int []iPosInicioSendServer;
+    int iNumSentServer;
+    boolean bSendDatosServer;
+    //int []iPosBufferAux;
+    //byte [][]dataToSend;
 
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
 
     Timer timerComprobarDesconexion;
     Timer timerGrabarDatos;
+    Timer timerEmpezarSendDatosBuffer;
+    Timer timerSendDatosBuffer;
 
     boolean bReiniciar = false;
     boolean bReinicio;
@@ -208,6 +220,8 @@ public class ServiceDatos extends Service {
         // Necesario para los logs
         bLocation = intent.getBooleanExtra("Location", false);
         bSendServer = intent.getBooleanExtra("SendServer", false);
+        iTimeSendServer = intent.getIntExtra("timeSendServer", 1);
+        iDatosSendServer = intent.getIntExtra("datosSendServer", 2500);
 
         bLogStats = intent.getBooleanExtra("LogStats", true);
         bLogData = intent.getBooleanExtra("LogData", false);
@@ -228,6 +242,8 @@ public class ServiceDatos extends Service {
         bPrimerDato = new boolean[iNumDevices];
         lDatosRecibidosAnteriores = new long[iNumDevices];
 
+        iPosInicioSendServer = new int[iNumDevices];
+
         for (int i = 0; i < Datos.MAX_SENSOR_NUMBER; i++) {
             if (i < iNumDevices) {
                 bSensores[i][0] = bActivacion[i][0] = bConfigPeriodo[i][0] = bAcelerometro || bGiroscopo || bMagnetometro;
@@ -242,6 +258,22 @@ public class ServiceDatos extends Service {
         }
 
         movimiento = new byte[iNumDevices][SENSOR_MOV_DATA_LEN];
+
+        // Se almacena el doble de lo que se pide que se envie para poder seguir acumulando sin pisar
+        // lo que se envía
+        iNumMuestrasBuffer = 3*(iDatosSendServer/iPeriodo);
+        bufferDatos = new byte[iNumDevices][iNumMuestrasBuffer][SENSOR_MOV_DATA_LEN];
+        iPosBuffer = new int[iNumDevices];
+        //iPosBufferAux = new int[iNumDevices];
+        //dataToSend = new byte[iNumMuestrasBuffer/2][SENSOR_MOV_DATA_LEN+1];
+
+        /*for (int i = 0; i < iNumDevices; i++)
+            for (int j = 0; j < iNumMuestrasBuffer; j++)
+                for (int z = 0; z < SENSOR_MOV_DATA_LEN; z++)
+                    bufferDatos[i][j][z] = 0;*/
+
+        for (int i = 0; i < iNumDevices; i++)
+            iPosBuffer[i] = 0;
 
         sCadenaGiroscopo = new String[iNumDevices];
         sCadenaMagnetometro = new String[iNumDevices];
@@ -350,6 +382,54 @@ public class ServiceDatos extends Service {
 
         realizarConexiones();
 
+        final TimerTask timerTaskEmpezarSendDatosBuffer = new TimerTask() {
+            @Override
+            public void run() {
+                /*for (int iDevice = 0; iDevice < iNumDevices; iDevice++)
+                    iPosBufferAux[iDevice] = iPosBuffer[iDevice];
+
+                for (int iDevice = 0; iDevice < iNumDevices; iDevice++) {
+                    for (int i = 0; i < iNumMuestrasBuffer / 2; i++) {
+                        int iPos = (iPosBufferAux[iDevice] + i) % iNumMuestrasBuffer;
+                        //System.out.println(iPos);
+                        //byte prueba[] = bufferDatos[iDevice][iPos];
+                        System.arraycopy(bufferDatos[iDevice][iPos], 0, dataToSend[i], 1, SENSOR_MOV_DATA_LEN);
+                    }
+                    envioAsync.setDataBuffer((byte) iDevice, dataToSend);
+                }*/
+                for (int iDevice = 0; iDevice < iNumDevices; iDevice++) {
+                    iPosInicioSendServer[iDevice] = iPosBuffer[iDevice] - iNumMuestrasBuffer / 3;
+                    if (iPosInicioSendServer[iDevice] < 0)
+                        iPosInicioSendServer[iDevice] = iNumMuestrasBuffer + iPosInicioSendServer[iDevice];
+                    iNumSentServer = 0;
+                }
+                bSendDatosServer = true;
+            }
+        };
+
+        final TimerTask timerTaskSendDatosBuffer = new TimerTask() {
+            @Override
+            public void run() {
+                if (!bSendDatosServer)
+                    return;
+
+                for (int iDevice = 0; iDevice < iNumDevices; iDevice++) {
+                    envioAsync.setData((byte) iDevice, bufferDatos[iDevice][iPosInicioSendServer[iDevice] + iNumSentServer]);
+                    iNumSentServer++;
+                }
+                if (iNumSentServer == iNumMuestrasBuffer / 3) {
+                    bSendDatosServer = false;
+                }
+            }
+        };
+
+        timerEmpezarSendDatosBuffer = new Timer();
+        timerSendDatosBuffer = new Timer();
+        if (bSendServer && iTimeSendServer != 0) {
+            timerEmpezarSendDatosBuffer.scheduleAtFixedRate(timerTaskEmpezarSendDatosBuffer, 60000 / iTimeSendServer, 60000 / iTimeSendServer);
+            timerSendDatosBuffer.scheduleAtFixedRate(timerTaskSendDatosBuffer, 0, iPeriodo);
+        }
+
         Message msg = mServiceHandler.obtainMessage();
         msg.arg1 = startId;
         mServiceHandler.sendMessage(msg);
@@ -418,7 +498,11 @@ public class ServiceDatos extends Service {
                 String sCadena = sdf.format(new Date()) + " Creación de servicio de envío a servidor " + sServer + ":" + iPuerto + "\n";
                 enviarMensaje(sCadena);
 
-                envioAsync = new EnvioDatosSocket(sServer, iPuerto, SENSOR_MOV_DATA_LEN + 1);
+                // Si el tiempo entre envíos es 0 se envía continuamente
+                //if (iTimeSendServer == 0)
+                    envioAsync = new EnvioDatosSocket(sServer, iPuerto, SENSOR_MOV_DATA_LEN + 1);
+                /*else    // En otro caso se envía por lotes la mitad del buffer (porque tiene el doble de la capacidad necesaria)
+                    envioAsync = new EnvioDatosSocket(sServer, iPuerto, iNumMuestrasBuffer/2,SENSOR_MOV_DATA_LEN + 1);*/
                 envioAsync.start();
             }
         }
@@ -620,8 +704,10 @@ public class ServiceDatos extends Service {
                 int iDevice = findGattIndex(gatt);
 
                 movimiento[iDevice] = characteristic.getValue();
-
                 lDatosRecibidos[iDevice]++;
+
+                bufferDatos[iDevice][iPosBuffer[iDevice]] = movimiento[iDevice];
+                iPosBuffer[iDevice] = (iPosBuffer[iDevice] + 1) % iNumMuestrasBuffer;
 
                 //boolean bDatosParaEnvio = bLogData || ((lDatosRecibidos[iDevice] + lMensajesPorSegundo) % lMensajesParaEnvio) == 0;
                 boolean bDatosParaEnvio = ((lDatosRecibidos[iDevice] + lMensajesPorSegundo) % lMensajesParaEnvio) == 0;
@@ -652,10 +738,18 @@ public class ServiceDatos extends Service {
                             String sCadena = sdf.format(new Date()) + " envioAsync es NULL\n";
                             publishSensorValues(0, Datos.MSG, sCadena);
 
-                            envioAsync = new EnvioDatosSocket(sServer, iPuerto, SENSOR_MOV_DATA_LEN + 1);
+                            // Si el tiempo entre envíos es 0 se envía continuamente
+                            //if (iTimeSendServer == 0)
+                                envioAsync = new EnvioDatosSocket(sServer, iPuerto, SENSOR_MOV_DATA_LEN + 1);
+                            /*else    // En otro caso se envía por lotes la mitad del buffer (porque tiene el doble de la capacidad necesaria)
+                                envioAsync = new EnvioDatosSocket(sServer, iPuerto, iNumMuestrasBuffer/2, SENSOR_MOV_DATA_LEN + 1);*/
+
                             envioAsync.start();
                         }
-                        envioAsync.setData((byte) iDevice, movimiento[iDevice]);
+
+                        if (iTimeSendServer == 0) {
+                            envioAsync.setData((byte) iDevice, movimiento[iDevice]);
+                        }
                     }
                 } catch (Exception e) {
                     String sCadena = sdf.format(new Date()) + " Excepción de envío: " + e.getMessage() + "\n";
