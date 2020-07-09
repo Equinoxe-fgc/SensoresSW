@@ -201,6 +201,8 @@ public class ServiceDatos extends Service {
         powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         try {
             wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MyApp::MyWakelockTag");
+            if (wakeLock.isHeld())
+                wakeLock.release();
             wakeLock.acquire();
         } catch (NullPointerException e) {
             Log.e("NullPointerException", "ServiceDatos - onStartCommand");
@@ -517,13 +519,10 @@ public class ServiceDatos extends Service {
     }
 
     public void setWifiLock() {
-        wifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "myWifiLock");
-        if (wifiLock.isHeld()){
+        wifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "SensoresSW_WifiLock");
+        if (wifiLock.isHeld())
             wifiLock.release();
-        }
-        else {
-            wifiLock.acquire();
-        }
+        wifiLock.acquire();
     }
 
     private void enviarMensaje(String sMsg) {
