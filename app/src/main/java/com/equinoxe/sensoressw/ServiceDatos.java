@@ -402,6 +402,14 @@ public class ServiceDatos extends Service {
                     v.vibrate(VibrationEffect.createOneShot(1000, VibrationEffect.DEFAULT_AMPLITUDE));
 
                     enviarMensaje(sdf.format(new Date()) + " " + getString(R.string.ERROR_CONNECTION_LOST) + "\n");
+                    try {
+                        envioAsync.finalize();
+                    } catch (Throwable e) {}
+
+                    envioAsync = null;
+
+                    envioAsync = new EnvioDatosSocket(sServer, iPuerto, SENSOR_MOV_DATA_LEN + 1);
+                    envioAsync.start();
                     return;
                 }
 
