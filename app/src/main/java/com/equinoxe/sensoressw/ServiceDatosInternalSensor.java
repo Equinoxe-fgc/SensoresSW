@@ -215,11 +215,12 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
             //batInfo.getCurrentNow() + " - ";
             fOut.write(sCadena.getBytes());
 
-            sCadena = "";
-            for (int i = 0; i < Datos.MAX_SENSOR_NUMBER; i++) {
+            long lNumMsg = lNumMsgGiroscopo + lNumMsgMagnetometro + lNumMsgAcelerometro + lNumMsgHR;
+            sCadena = "(" + lNumMsg + ",0)";
+            for (int i = 1; i < Datos.MAX_SENSOR_NUMBER; i++) {
                 sCadena += "(0,0)";
             }
-            sCadena += "(0,0)\n";
+            sCadena += "(" + lNumMsg + ",0)\n";
             fOut.write(sCadena.getBytes());
             fOut.flush();
         } catch (Exception e) {
@@ -259,7 +260,7 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
                 msg.arg1 = Datos.MAGNETOMETRO;
                 break;
             case Sensor.TYPE_HEART_RATE:
-                long lNumMsg = lNumMsgGiroscopo + lNumMsgMagnetometro + lNumMsgAcelerometro + lNumMsgHR;
+                //long lNumMsg = lNumMsgGiroscopo + lNumMsgMagnetometro + lNumMsgAcelerometro + lNumMsgHR;
                 lNumMsgHR++;
                 sCadenaHeartRate = "HR: " + df.format(event.values[0]) + " - " + lNumMsgHR;
                 sCadenaFichero = sCadenaHeartRate;
