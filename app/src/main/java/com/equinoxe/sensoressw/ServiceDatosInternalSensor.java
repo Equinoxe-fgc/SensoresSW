@@ -18,6 +18,7 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -54,6 +55,9 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
     FileOutputStream fOut;
 
     long lNumMsgGiroscopo, lNumMsgMagnetometro, lNumMsgAcelerometro, lNumMsgHR;
+
+    PowerManager powerManager;
+    PowerManager.WakeLock wakeLock;
 
     @Override
     public void onCreate() {
@@ -92,6 +96,16 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        try {
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::WakelockInterno");
+            if (wakeLock.isHeld())
+                wakeLock.release();
+            wakeLock.acquire();
+        } catch (NullPointerException e) {
+            Log.e("NullPointerException", "ServiceDatos - onStartCommand");
+        }
+
         //createNotificationChannel();
         lNumMsgGiroscopo = 0;
         lNumMsgMagnetometro = 0;
@@ -337,6 +351,8 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
         if (bHeartRate) {
             sensorManager.unregisterListener(this, sensorHeartRate);
         }
+
+        wakeLock.release();
     }
 
     @Override
