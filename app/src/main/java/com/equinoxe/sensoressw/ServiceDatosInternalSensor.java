@@ -103,7 +103,7 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
                 wakeLock.release();
             wakeLock.acquire();
         } catch (NullPointerException e) {
-            Log.e("NullPointerException", "ServiceDatos - onStartCommand");
+            Log.e("NullPointerException", "ServiceDatosInternalSensor - onStartCommand");
         }
 
         //createNotificationChannel();
@@ -156,8 +156,9 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
             }
         }
 
-        // Si es el único dispositivo hay que grabar el log para saber lo que dura encendido
-        if (bLogStats && iNumDevices == 1) {
+        // Si es el único dispositivo hay que grabar el log para saber lo que dura encendido - NO
+        // Se graba siempre en un fichero diferente para poder analizar el comportamiento
+        if (bLogStats /*&& iNumDevices == 1*/) {
             sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.UK);
 
             batInfo = new BatteryInfoBT();
@@ -166,7 +167,7 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
             int iNumFichero = 0;
             String sFichero;
             do {
-                sFichero = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + iNumDevices + "_" + iPeriodo + "_" + iNumFichero + ".txt";
+                sFichero = Environment.getExternalStorageDirectory() + "/" + Build.MODEL + "_" + iNumDevices + "_" + iPeriodo + "_" + iNumFichero + "_Interno.txt";
                 file = new File(sFichero);
                 iNumFichero++;
             } while (file.exists());
@@ -177,7 +178,8 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
                 fOut = new FileOutputStream(sFichero, false);
                 String sModel = Build.MODEL;
                 sModel = sModel.replace(" ", "_");
-                String sCadena = sModel + " " + iNumDevices + " " + iPeriodo + " " + bLocation + " " + bSendServer + " " + currentDateandTime + "\n";
+                String sCadena = sModel + " " + iNumDevices + " " + iPeriodo + " " + bLocation + " " + bSendServer + " " +
+                                 bAcelerometro + " " + bGiroscopo + " " + bMagnetometro + " " + bHeartRate + " " + currentDateandTime + "\n";
                 fOut.write(sCadena.getBytes());
                 fOut.flush();
             } catch (Exception e) {
