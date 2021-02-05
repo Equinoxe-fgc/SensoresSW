@@ -233,9 +233,18 @@ public class ServiceDatosInternalSensor extends Service implements SensorEventLi
 
             long lNumMsg = lNumMsgGiroscopo + lNumMsgMagnetometro + lNumMsgAcelerometro + lNumMsgHR;
             sCadena = "(" + lNumMsg + ",0)";
-            for (int i = 1; i < Datos.MAX_SENSOR_NUMBER; i++) {
+            /*for (int i = 1; i < Datos.MAX_SENSOR_NUMBER; i++) {
+                sCadena += "(0,0)";
+            }*/
+            sCadena += "(" + lNumMsgGiroscopo + ",0)";
+            sCadena += "(" + lNumMsgMagnetometro + ",0)";
+            sCadena += "(" + lNumMsgAcelerometro + ",0)";
+            sCadena += "(" + lNumMsgHR + ",0)";
+
+            for (int i = 1; i < Datos.MAX_SENSOR_NUMBER - 4; i++) {
                 sCadena += "(0,0)";
             }
+
             sCadena += "(" + lNumMsg + ",0)\n";
             fOut.write(sCadena.getBytes());
             fOut.flush();
